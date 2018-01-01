@@ -1,22 +1,13 @@
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
+import java.awt.event.KeyEvent;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
 import com.eclipsesource.json.JsonObject;
@@ -27,6 +18,7 @@ public class CoinTracker  {
     
     private CryptoCompare cc;
     private Thread httpThread;
+    private HashSet<String> symbols = new HashSet<String>();
     private HashMap<String, Integer> trackers = new HashMap<String, Integer>();
     private HashMap<String, Integer> assets = new HashMap<String, Integer>();
     private int refreshRate = 10; // Seconds
@@ -52,7 +44,7 @@ public class CoinTracker  {
     private DefaultTableModel dtm_portfolio = new DefaultTableModel(columns_portfolio, 0);
     private JTable tbl_portfolio = new JTable(dtm_portfolio);
     
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) {
         new CoinTracker();
     }
     
@@ -67,6 +59,9 @@ public class CoinTracker  {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() { startGUI(); }
         });
+        List<String> syms = cc.getSymbols();
+        System.out.println("All Symbols : (" + syms.size() + ") " + syms.toString());
+        for (String s : syms) symbols.add(s);
         restartHttpThread();
     }
     
@@ -76,18 +71,69 @@ public class CoinTracker  {
     private void startGUI() {
         JFrame mainFrame = new JFrame("Coin Tracker");
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        mainFrame.setSize(500, 600);
+        mainFrame.setSize(550, 650);
         //mainFrame.setMinimumSize(new Dimension(500, 700));
         //mainFrame.setMaximumSize(new Dimension(500, 700));
         mainFrame.setResizable(false);
-        
+
+        ///////////////// MENU BAR
+
+        JMenuBar mainMenu = new JMenuBar();
+        JMenu fileMenu = new JMenu("File");
+        fileMenu.setMnemonic(KeyEvent.VK_F);
+
+
+        JMenuItem openConfig = new JMenuItem("Open Configuration");
+        openConfig.setMnemonic(KeyEvent.VK_O);
+        openConfig.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Set<String> t = new HashSet<String>();
+                HashMap<String, String> a = new HashMap<String, String>();
+                utils.Files.loadConfig(t, a);
+
+                for (String s : t) {
+                    if (trackers.containsKey(s)) continue;
+                    trackers.put(s, tbl_trackers.getRowCount());
+                    dtm.addRow(new String[]{s, "", ""});
+                }
+
+                for (String s : a.keySet()) {
+                    if (assets.containsKey(s)) continue;
+                    assets.put(s, tbl_portfolio.getRowCount());
+                    dtm_portfolio.addRow(new String[]{s, a.get(s)});
+                }
+            }
+        });
+
+
+
+        JMenuItem saveConfig = new JMenuItem("Save Configuration");
+        saveConfig.setMnemonic(KeyEvent.VK_S);
+        saveConfig.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                HashMap<String, String> assetMap = new HashMap<String, String>();
+                for (String s : assets.keySet()) {
+                    String count = (String) tbl_portfolio.getValueAt(assets.get(s), 1);
+                    assetMap.put(s, count);
+                }
+                utils.Files.saveConfig(trackers.keySet(), assetMap);
+            }
+        });
+
+        fileMenu.add(openConfig);
+        fileMenu.add(saveConfig);
+        mainMenu.add(fileMenu);
+        mainFrame.setJMenuBar(mainMenu);
+
+        ///////////////////// PANEL 1
+
         ActionListener addAL = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String[] str = tf_addSymbol.getText().split(",");
                 tf_addSymbol.setText("");
                 for (String st : str) {
                     String s = st.toUpperCase();
-                    if (trackers.containsKey(s)) continue;
+                    if (trackers.containsKey(s) || !symbols.contains(s)) continue;
                     trackers.put(s, tbl_trackers.getRowCount());
                     dtm.addRow(new String[]{s, "", ""});
                 }
@@ -149,14 +195,15 @@ public class CoinTracker  {
         JTabbedPane jtp = new JTabbedPane();
         jtp.add("Trackers", panel1);
 
-        /////////////////
+        /////////////////  PANEL 2
         
         ActionListener assetAL = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String asset_sym = tf_addSymbolPortfolio.getText().toUpperCase();
+                if (!symbols.contains(asset_sym)) return;
                 String asset_count = tf_addQuantityPortfolio.getText();
                 assets.put(asset_sym, tbl_portfolio.getRowCount());
-                dtm_portfolio.addRow(new String[]{asset_sym, asset_count, "", ""});
+                dtm_portfolio.addRow(new String[]{asset_sym, asset_count});
                 tf_addSymbolPortfolio.setText("");
                 tf_addQuantityPortfolio.setText("");
             }

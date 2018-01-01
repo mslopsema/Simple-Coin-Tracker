@@ -17,14 +17,13 @@ public class CryptoCompare {
     String priceb = "&tsyms=BTC,USD";
     
     public CryptoCompare() {
-        //reloadSymbolMap();
+        getSymbols();
     }
     
     public List<String> getSymbols() {
         List<String> list = new ArrayList<String>();
         JsonObject jo = getHttp(base);
-        System.out.println(jo.toString());
-        return list;
+        return jo.get("Data").asObject().names();
     }
     
     public JsonObject getPrice(Set<String> set) {
