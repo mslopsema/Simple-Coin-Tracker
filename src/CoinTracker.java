@@ -3,7 +3,6 @@ import java.awt.event.ActionListener;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -26,7 +25,7 @@ public class CoinTracker  {
     private long start = System.currentTimeMillis();
 
     private int refreshRate = 10; // Seconds
-    private double[] ASSET_SUM = {0, 0}; // {BTC, USD}
+    private double[] ASSET_SUM = new double[Elements.UNITS.length]; // {BTC, USD}
 
     public static void main(String[] args) {
         new CoinTracker();
@@ -44,6 +43,7 @@ public class CoinTracker  {
             public void run() {
                 e = new Elements();
                 e.frames.mainFrame.setVisible(true);
+                loadConfig();
                 setGuiListeners();
             }
         });
@@ -57,21 +57,7 @@ public class CoinTracker  {
         // Menus
         e.menus.openItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                Set<String> t = new HashSet<String>();
-                HashMap<String, String> a = new HashMap<String, String>();
-                utils.Files.loadConfig(t, a);
-
-                for (String s : t) {
-                    if (trackers.containsKey(s)) continue;
-                    trackers.put(s, e.tables.trackers.getRowCount());
-                    e.tables.modelTrackers.addRow(new String[]{s, "", ""});
-                }
-
-                for (String s : a.keySet()) {
-                    if (assets.containsKey(s)) continue;
-                    assets.put(s, e.tables.portfolio.getRowCount());
-                    e.tables.modelPortfolio.addRow(new String[]{s, a.get(s)});
-                }
+                loadConfig();
             }
         });
         e.menus.saveItem.addActionListener(new ActionListener() {
@@ -146,6 +132,24 @@ public class CoinTracker  {
         e.buttons.addPortfolioSymbol.addActionListener(assetAL);
     }
 
+    private void loadConfig() {
+        Set<String> t = new HashSet<String>();
+        HashMap<String, String> a = new HashMap<String, String>();
+        utils.Files.loadConfig(t, a);
+
+        for (String s : t) {
+            if (trackers.containsKey(s)) continue;
+            trackers.put(s, e.tables.trackers.getRowCount());
+            e.tables.modelTrackers.addRow(new String[]{s, "", ""});
+        }
+
+        for (String s : a.keySet()) {
+            if (assets.containsKey(s)) continue;
+            assets.put(s, e.tables.portfolio.getRowCount());
+            e.tables.modelPortfolio.addRow(new String[]{s, a.get(s)});
+        }
+    }
+
     /**
      * For updating the Estimated Value of the portfolio.
      * There is 2 states {BTC, USD} - Based on Currency Units.
@@ -186,50 +190,44 @@ public class CoinTracker  {
 
         @Override
         public void run() {
+            Set<String> units = new HashSet<String>();
+            for (String s : Elements.UNITS) units.add(s);
+
             while (!Thread.interrupted()) {
-                Set<String> keysTrackers = trackers.keySet();
-                System.out.println(keysTrackers.toString());
-                if (keysTrackers.size() > 0) {
-                    JsonObject jo = cc.getPrice(keysTrackers);
-                    if (jo == null) continue;
-                    System.out.println(jo.toString());
-                    for (String s : keysTrackers) {
-                        JsonObject obj = (JsonObject) jo.get(s);
-                        if (obj == null) continue;
-                        e.tables.trackers.getModel().setValueAt(obj.get("BTC"), trackers.get(s), 1);
-                        e.tables.trackers.getModel().setValueAt(obj.get("USD"), trackers.get(s), 2);
-                    }
-                }
-                Set<String> keysAssets = assets.keySet();
-                System.out.println(keysAssets.toString());
-                if (keysAssets.size() > 0) {
-                    JsonObject jo = cc.getPrice(keysAssets);
-                    if (jo == null) continue;
-                    System.out.println(jo.toString());
-                    
+                Set<String> allKeys = new HashSet<String>();
+                allKeys.addAll(trackers.keySet());
+                allKeys.addAll(assets.keySet());
+                System.out.println(allKeys.toString());
+
+                JsonObject jo = cc.getPrice(allKeys, units);
+                if (jo != null) {
                     double sum_usd = 0;
                     double sum_btc = 0;
-                    
-                    for (String s : keysAssets) {
+                    for (String s : jo.names()) {
                         JsonObject obj = (JsonObject) jo.get(s);
                         if (obj == null) continue;
-                        double usd_rate = obj.getDouble("USD", 0);
-                        double btc_rate = obj.getDouble("BTC", 0);
-                        double count = Double.parseDouble((String) e.tables.portfolio.getModel().
-                                getValueAt(assets.get(s), 1));
-                        double usd_val = usd_rate * count;
-                        double btc_val = btc_rate * count;
-                        e.tables.portfolio.getModel().setValueAt(btc_rate, assets.get(s), 2);
-                        e.tables.portfolio.getModel().setValueAt(btc_val,  assets.get(s), 3);
-                        e.tables.portfolio.getModel().setValueAt(usd_rate, assets.get(s), 4);
-                        e.tables.portfolio.getModel().setValueAt(usd_val,  assets.get(s), 5);
-                        sum_usd += usd_val;
-                        sum_btc += btc_val;
+                        double btc = obj.getDouble("BTC", 0);
+                        double usd = obj.getDouble("USD", 0);
+                        if (trackers.containsKey(s)) {
+                            e.tables.trackers.getModel().setValueAt(btc, trackers.get(s), 1);
+                            e.tables.trackers.getModel().setValueAt(usd, trackers.get(s), 2);
+                        }
+                        if (assets.containsKey(s)) {
+                            double count = Double.parseDouble((String) e.tables.portfolio.getModel().
+                                    getValueAt(assets.get(s), 1));
+                            double usd_val = usd * count;
+                            double btc_val = btc * count;
+                            sum_usd += usd_val;
+                            sum_btc += btc_val;
+                            e.tables.portfolio.getModel().setValueAt(btc, assets.get(s), 2);
+                            e.tables.portfolio.getModel().setValueAt(btc_val,  assets.get(s), 3);
+                            e.tables.portfolio.getModel().setValueAt(usd, assets.get(s), 4);
+                            e.tables.portfolio.getModel().setValueAt(usd_val,  assets.get(s), 5);
+                        }
                     }
                     updateAssetTotal(sum_btc, sum_usd, true);
                 }
-                
-                
+
                 try {
                     updateStatus(cycles++);
                     Thread.sleep(refreshRate * 1000);

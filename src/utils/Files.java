@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Set;
 
 public class Files {
-    private static final String FILE_CONFIG = ".coin.config";
+    private static final String FILE_CONFIG = ".sct.config";
     private static final String KEY_TRACKERS = "trackers";
     private static final String KEY_ASSETS = "assets";
     private static final String KEY_SYMBOL = "symbol";

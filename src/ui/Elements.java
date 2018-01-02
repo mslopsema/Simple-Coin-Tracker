@@ -1,10 +1,25 @@
 package ui;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.KeyEvent;
 
 public class Elements {
+    public static final String[] UNITS = {"BTC", "USD"};
+
     public class Buttons {
         public JButton addTrackerSymbol   = new JButton("ADD");
         public JButton setRefreshRate     = new JButton("SET");
@@ -34,9 +49,8 @@ public class Elements {
     }
 
     public class ComboBoxs {
-        public String[] VALUES = {"BTC", "USD"};
-        public JComboBox assetValueTracker   = new JComboBox(VALUES);
-        public JComboBox assetValuePortfolio = new JComboBox(VALUES);
+        public JComboBox assetValueTracker   = new JComboBox(UNITS);
+        public JComboBox assetValuePortfolio = new JComboBox(UNITS);
     }
 
     public class Tables {
