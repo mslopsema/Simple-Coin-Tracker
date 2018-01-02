@@ -23,12 +23,13 @@ public class CryptoCompare {
 
 
     public CryptoCompare() {
-        loadSymbols();
+        System.out.println("Using API Source : " + HOME);
     }
 
-    private void loadSymbols() {
+    public void loadSymbols() {
         List<String> list = getHttp(API_COIN_LIST).get(KEY_COINS).asObject().names();
         for (String s : list) SYMBOLS.add(s);
+        System.out.println("SYMBOLS : " + SYMBOLS.toString());
     }
 
     public boolean containsSymbol(String s) {
@@ -63,7 +64,7 @@ public class CryptoCompare {
             c.connect();
 
             int status = c.getResponseCode();
-            System.out.println(c.getURL() + " -> [" + status + "][" + (System.currentTimeMillis() - start) + "ms]");
+            //System.out.println(c.getURL() + " -> [" + status + "][" + (System.currentTimeMillis() - start) + "ms]");
             return (JsonObject) Json.parse(new InputStreamReader(c.getInputStream()));
         } catch (Exception e) {
             e.printStackTrace();

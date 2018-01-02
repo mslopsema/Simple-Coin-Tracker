@@ -22,7 +22,6 @@ public class CoinTracker  {
     private HashMap<String, Integer> trackers = new HashMap<String, Integer>();
     private HashMap<String, Integer> assets = new HashMap<String, Integer>();
     private Elements e;
-    private long start = System.currentTimeMillis();
 
     private int refreshRate = 10; // Seconds
     private double[] ASSET_SUM = new double[Elements.UNITS.length]; // {BTC, USD}
@@ -37,14 +36,14 @@ public class CoinTracker  {
      * 2. Start HTTP Looping Thread
      */
     private CoinTracker() {
-        System.out.println("Start CT");
         cc = new CryptoCompare();
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 e = new Elements();
+                e.frames.mainFrame.setTitle(TITLE + " : " + cc.HOME);
                 e.frames.mainFrame.setVisible(true);
-                loadConfig();
                 setGuiListeners();
+                loadConfig();
             }
         });
         restartHttpThread();
@@ -171,11 +170,6 @@ public class CoinTracker  {
                 ASSET_SUM[e.comboBoxes.assetValuePortfolio.getSelectedIndex()]));
     }
 
-    private void updateStatus(long cycles) {
-        long runtime = System.currentTimeMillis() - start;
-        System.out.println(TITLE + " | Source : " +  cc.HOME + " Cycles : " + cycles + " Runtime : " + runtime + "ms");
-    }
-
     private void restartHttpThread() {
         if (httpThread != null) {
             httpThread.interrupt();
@@ -186,26 +180,35 @@ public class CoinTracker  {
     }
 
     private class HttpThread implements Runnable {
-        long cycles = 0;
 
         @Override
         public void run() {
+            cc.loadSymbols();
+
+            long startTimeThread = System.currentTimeMillis();
+            long cycles = 0;
+            int faults = 0;
             Set<String> units = new HashSet<String>();
             for (String s : Elements.UNITS) units.add(s);
 
             while (!Thread.interrupted()) {
+                long startTimeLoop = System.currentTimeMillis();
                 Set<String> allKeys = new HashSet<String>();
                 allKeys.addAll(trackers.keySet());
                 allKeys.addAll(assets.keySet());
-                System.out.println(allKeys.toString());
 
                 JsonObject jo = cc.getPrice(allKeys, units);
-                if (jo != null) {
+                if (jo == null) {
+                    faults++;
+                } else {
                     double sum_usd = 0;
                     double sum_btc = 0;
                     for (String s : jo.names()) {
                         JsonObject obj = (JsonObject) jo.get(s);
-                        if (obj == null) continue;
+                        if (obj == null) {
+                            faults++;
+                            continue;
+                        }
                         double btc = obj.getDouble("BTC", 0);
                         double usd = obj.getDouble("USD", 0);
                         if (trackers.containsKey(s)) {
@@ -227,9 +230,11 @@ public class CoinTracker  {
                     }
                     updateAssetTotal(sum_btc, sum_usd, true);
                 }
+                System.out.println("Cycles : " + cycles++ + " Faults : " + faults +
+                        " LoopTime : " + (System.currentTimeMillis() - startTimeLoop) +
+                        " RunTime : "  + (System.currentTimeMillis() - startTimeThread));
 
                 try {
-                    updateStatus(cycles++);
                     Thread.sleep(refreshRate * 1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
