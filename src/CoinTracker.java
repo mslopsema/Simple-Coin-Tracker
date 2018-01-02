@@ -16,12 +16,14 @@ import api.CryptoCompare;
 import ui.Elements;
 
 public class CoinTracker  {
-    
+
+    public static final String TITLE = "Simple Coin Tracker";
     private CryptoCompare cc;
     private Thread httpThread;
     private HashMap<String, Integer> trackers = new HashMap<String, Integer>();
     private HashMap<String, Integer> assets = new HashMap<String, Integer>();
     private Elements e;
+    private long start = System.currentTimeMillis();
 
     private int refreshRate = 10; // Seconds
     private double[] ASSET_SUM = {0, 0}; // {BTC, USD}
@@ -164,7 +166,12 @@ public class CoinTracker  {
         e.textFields.assetValuePortfolio.setText(String.valueOf(
                 ASSET_SUM[e.comboBoxes.assetValuePortfolio.getSelectedIndex()]));
     }
-    
+
+    private void updateStatus(long cycles) {
+        long runtime = System.currentTimeMillis() - start;
+        System.out.println(TITLE + " | Source : " +  cc.HOME + " Cycles : " + cycles + " Runtime : " + runtime + "ms");
+    }
+
     private void restartHttpThread() {
         if (httpThread != null) {
             httpThread.interrupt();
@@ -173,8 +180,10 @@ public class CoinTracker  {
         httpThread = new Thread(new HttpThread());
         httpThread.start();
     }
-    
+
     private class HttpThread implements Runnable {
+        long cycles = 0;
+
         @Override
         public void run() {
             while (!Thread.interrupted()) {
@@ -222,6 +231,7 @@ public class CoinTracker  {
                 
                 
                 try {
+                    updateStatus(cycles++);
                     Thread.sleep(refreshRate * 1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();

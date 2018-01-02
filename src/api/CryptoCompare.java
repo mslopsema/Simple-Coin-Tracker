@@ -14,6 +14,7 @@ import com.eclipsesource.json.JsonObject;
  * Coin Tracking API Implementation using CryptoCompare APIs
  */
 public class CryptoCompare {
+    public static final String HOME = "https://cryptocompare.com/";
     private static final String API_COIN_LIST = "https://min-api.cryptocompare.com/data/all/coinlist";
     private static final String API_PRICE_PREFIX = "https://min-api.cryptocompare.com/data/pricemulti?fsyms=";
     private static final String API_PRICE_SUFFIX = "&tsyms=BTC,USD";

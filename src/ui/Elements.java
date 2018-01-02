@@ -49,11 +49,11 @@ public class Elements {
     }
 
     public class Frames {
-        public JFrame mainFrame = new JFrame("Simple Coin Tracker : ");
+        public JFrame mainFrame = new JFrame("Simple Coin Tracker");
 
         public Frames() {
             mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            mainFrame.setSize(550, 650);
+            mainFrame.setSize(600, 650);
             mainFrame.setResizable(false);
             mainFrame.setJMenuBar(menus.mainMenuBar);
             mainFrame.getContentPane().add(tabs.mainTabs);
