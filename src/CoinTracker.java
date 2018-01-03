@@ -15,8 +15,9 @@ import com.eclipsesource.json.JsonObject;
 import api.CryptoCompare;
 import ui.Elements;
 import utils.Formatting;
+import utils.Files;
 
-public class CoinTracker  {
+public class CoinTracker {
 
     public static final String TITLE = "Simple Coin Tracker";
     private CryptoCompare api;
@@ -68,7 +69,7 @@ public class CoinTracker  {
                     String count = (String) e.tables.portfolio.getValueAt(assets.get(s), 1);
                     assetMap.put(s, count);
                 }
-                utils.Files.saveConfig(trackers.keySet(), assetMap);
+                Files.saveConfig(trackers.keySet(), assetMap);
             }
         });
         e.menus.clearItem.addActionListener(new ActionListener() {
@@ -136,7 +137,7 @@ public class CoinTracker  {
     private void loadConfig() {
         Set<String> t = new HashSet<String>();
         HashMap<String, String> a = new HashMap<String, String>();
-        utils.Files.loadConfig(t, a);
+        Files.loadConfig(t, a);
 
         for (String s : t) {
             if (trackers.containsKey(s)) continue;

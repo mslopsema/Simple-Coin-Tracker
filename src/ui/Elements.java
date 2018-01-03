@@ -68,12 +68,13 @@ public class Elements {
     public class Tables {
         public final String[] COLUMNS_TRACKER = {"Tracker", "Price/BTC", "1day Δ BTC", "Price/USD", "1day Δ USD"};
         public final String[] COLUMNS_PORTFOLIO = {"Symbol", "Quantity", "Price/BTC", "Value/BTC", "1day Δ BTC", "Price/USD", "Value/USD", "1day Δ USD"};
-        public DefaultTableModel modelTrackers = new DefaultTableModel(COLUMNS_TRACKER, 0);
-        public DefaultTableModel modelPortfolio = new DefaultTableModel(COLUMNS_PORTFOLIO, 0);
+        public CustomTableModel modelTrackers = new CustomTableModel(COLUMNS_TRACKER, 0);
+        public CustomTableModel modelPortfolio = new CustomTableModel(COLUMNS_PORTFOLIO, 0);
         public JTable trackers = new JTable(modelTrackers);
         public JTable portfolio = new JTable(modelPortfolio);
 
         public Tables() {
+            modelTrackers.isCellEditable(1, 1);
         }
     }
 
@@ -83,7 +84,6 @@ public class Elements {
         public Frames() {
             mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             mainFrame.setSize(550, 700);
-            mainFrame.setResizable(false);
             mainFrame.setJMenuBar(menus.mainMenuBar);
             mainFrame.getContentPane().add(tabs.mainTabs);
         }
@@ -120,18 +120,20 @@ public class Elements {
         JPanel addTracker = new JPanel();
         JPanel setRefresh = new JPanel();
         JPanel assetValueTracker = new JPanel();
-        JPanel trackersTable = new JPanel();
+        JPanel trackersTable = new JPanel(new GridLayout());
         JPanel trackers = new JPanel();
 
         JPanel addPortfolio = new JPanel();
         JPanel assetValuePortfolio = new JPanel();
         JPanel assetValueChange = new JPanel();
-        JPanel portfolioTable = new JPanel();
+        JPanel portfolioTable = new JPanel(new GridLayout());
         JPanel portfolio = new JPanel();
 
         Panels() {
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 1.0;
+            gbc.weightx = 1.0;
 
             // Trackers Tab
             addTracker.setBorder(BorderFactory.createTitledBorder("Add Tracker"));
