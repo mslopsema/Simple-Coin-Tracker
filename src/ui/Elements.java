@@ -1,5 +1,8 @@
 package ui;
 
+import api.CryptoCompare;
+import utils.Files;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -13,12 +16,23 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Elements {
     public static final String[] UNITS = {"BTC", "USD"};
+    public double[] ASSET_SUM = new double[UNITS.length]; // {BTC, USD}
+    public int refreshRate = 10; // s
 
     public class Buttons {
         public JButton addTrackerSymbol   = new JButton("ADD");
@@ -29,14 +43,17 @@ public class Elements {
     public class TextFields {
         public JTextField addTrackerSymbol    = new JTextField("BTC", 5);
         public JTextField setRefreshRate      = new JTextField("10", 5);
+
         public JTextField addPortfolioSymbol  = new JTextField("BTC", 5);
         public JTextField addPortfolioCount   = new JTextField("1", 5);
+
         public JTextField assetValueTracker   = new JTextField("0", 8);
         public JTextField assetValuePortfolio = new JTextField("0", 8);
-        public JTextField assetValueChangRawBtc = new JTextField("0", 8);
-        public JTextField assetValueChangRawUsd = new JTextField("0", 8);
-        public JTextField assetValueChangePctBtc = new JTextField("0", 5);
-        public JTextField assetValueChangePctUsd = new JTextField("0", 5);
+
+        public JTextField assetValueChangRawBtc = new JTextField("0"); // 8
+        public JTextField assetValueChangRawUsd = new JTextField("0"); // 8
+        public JTextField assetValueChangePctBtc = new JTextField("0");// 5
+        public JTextField assetValueChangePctUsd = new JTextField("0");// 5
 
         public TextFields() {
             assetValueTracker.setEditable(false);
@@ -234,4 +251,120 @@ public class Elements {
     public Panels panels = new Panels();
     public Tabs tabs = new Tabs();
     public Frames frames = new Frames();
+
+    public Elements(CryptoCompare api) {
+        addActions(api);
+    }
+
+    private void addActions(CryptoCompare api) {
+        // Menus
+        menus.openItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                loadConfig();
+            }
+        });
+        menus.saveItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                HashMap<String, String> assetMap = new HashMap<String, String>();
+                for (String s : tables.modelPortfolio.keySet()) {
+                    String count = (String) tables.modelPortfolio.getValueAt(s, 1);
+                    assetMap.put(s, count);
+                }
+                Files.saveConfig(tables.modelTrackers.keySet(), assetMap);
+            }
+        });
+        menus.clearItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                tables.modelTrackers.clear();
+                tables.modelPortfolio.clear();
+                updateAssetTotal(0, 0, true);
+            }
+        });
+
+        // Trackers Tab
+        ActionListener addAL = new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                String[] str = textFields.addTrackerSymbol.getText().split(",");
+                for (String st : str) {
+                    String s = st.toUpperCase();
+                    if (tables.modelTrackers.contains(s) || !api.containsSymbol(s)) continue;
+                    tables.modelTrackers.addRow(new String[]{s});
+                }
+                textFields.addTrackerSymbol.setText("");
+            }
+        };
+        textFields.addTrackerSymbol.addActionListener(addAL);
+        buttons.addTrackerSymbol.addActionListener(addAL);
+
+        ActionListener comboAction = new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                updateAssetTotal(0, 0, false);
+            }
+        };
+        comboBoxes.assetValueTracker.addActionListener(comboAction);
+        comboBoxes.assetValuePortfolio.addActionListener(comboAction);
+
+        ActionListener refreshAction = new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                int rate = Integer.parseInt(textFields.setRefreshRate.getText());
+                if (rate < 1) rate = 1;
+                System.out.println("Set Rate : " + rate + "s");
+                refreshRate = rate;
+            }
+        };
+        textFields.setRefreshRate.addActionListener(refreshAction);
+        buttons.setRefreshRate.addActionListener(refreshAction);
+
+        // Portfolio Tab
+        ActionListener assetAL = new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                String s = textFields.addPortfolioSymbol.getText().toUpperCase();
+                if (tables.modelPortfolio.contains(s) || !api.containsSymbol(s)) return;
+                String asset_count = textFields.addPortfolioCount.getText();
+                tables.modelPortfolio.addRow(new String[]{s, asset_count});
+                textFields.addPortfolioSymbol.setText("");
+                textFields.addPortfolioCount.setText("");
+            }
+        };
+        textFields.addPortfolioSymbol.addActionListener(assetAL);
+        textFields.addPortfolioCount.addActionListener(assetAL);
+        buttons.addPortfolioSymbol.addActionListener(assetAL);
+    }
+
+    public void loadConfig() {
+        Set<String> t = new HashSet<String>();
+        HashMap<String, String> a = new HashMap<String, String>();
+        Files.loadConfig(t, a);
+
+        for (String s : t) {
+            if (tables.modelTrackers.contains(s)) continue;
+            tables.modelTrackers.addRow(new String[]{s, "", ""});
+        }
+
+        for (String s : a.keySet()) {
+            if (tables.modelPortfolio.contains(s)) continue;
+            tables.modelPortfolio.addRow(new String[]{s, a.get(s)});
+        }
+    }
+
+    /**
+     * For updating the Estimated Value of the portfolio.
+     * There is 2 states {BTC, USD} - Based on Currency Units.
+     * There is 2 fields which will be populated based on the Combo Box state.
+     * Will restrict to 10 decimal places.
+     * @param BTC Bitcoin Value
+     * @param USD US Dollar Value
+     * @param isNew To denote if the values are being changed, or if simply the units configuration is changing
+     */
+    public void updateAssetTotal(double BTC, double USD, boolean isNew) {
+        MathContext mc = new MathContext(10, RoundingMode.HALF_DOWN);
+        BTC = Double.parseDouble(new BigDecimal(BTC, mc).toPlainString());
+        USD = Double.parseDouble(new BigDecimal(USD, mc).toPlainString());
+
+        if (isNew) ASSET_SUM = new double[] {BTC, USD};
+        textFields.assetValueTracker.setText(String.valueOf(
+                ASSET_SUM[comboBoxes.assetValueTracker.getSelectedIndex()]));
+        textFields.assetValuePortfolio.setText(String.valueOf(
+                ASSET_SUM[comboBoxes.assetValuePortfolio.getSelectedIndex()]));
+    }
 }
