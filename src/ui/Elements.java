@@ -16,6 +16,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -50,16 +51,14 @@ public class Elements {
         public JTextField assetValueTracker   = new JTextField("0", 8);
         public JTextField assetValuePortfolio = new JTextField("0", 8);
 
-        public JTextField assetValueChangRawBtc = new JTextField("0"); // 8
-        public JTextField assetValueChangRawUsd = new JTextField("0"); // 8
-        public JTextField assetValueChangePctBtc = new JTextField("0");// 5
-        public JTextField assetValueChangePctUsd = new JTextField("0");// 5
+        public JTextField assetValueChangRawBtc = new JTextField("0", 9);
+        public JTextField assetValueChangRawUsd = new JTextField("0", 9);
+        public JTextField assetValueChangePctBtc = new JTextField("0", 6);
+        public JTextField assetValueChangePctUsd = new JTextField("0", 6);
 
         public TextFields() {
             assetValueTracker.setEditable(false);
-            //assetValueTracker.setHorizontalAlignment(SwingConstants.LEFT);
             assetValuePortfolio.setEditable(false);
-            //assetValuePortfolio.setHorizontalAlignment(SwingConstants.LEFT);
             addTrackerSymbol.setToolTipText("Separate multiple symbols with a comma ','");
             assetValueChangRawBtc.setEditable(false);
             assetValueChangRawUsd.setEditable(false);
@@ -83,7 +82,7 @@ public class Elements {
     }
 
     public class Tables {
-        public final String[] COLUMNS_TRACKER = {"Tracker", "Price/BTC", "1day Δ BTC", "Price/USD", "1day Δ USD"};
+        public final String[] COLUMNS_TRACKER = {"Tracker", "Price/BTC", "1day Δ% BTC", "Price/USD", "1day Δ% USD"};
         public final String[] COLUMNS_PORTFOLIO = {"Symbol", "Quantity", "Price/BTC", "Value/BTC", "1day Δ BTC", "Price/USD", "Value/USD", "1day Δ USD"};
         public CustomTableModel modelTrackers = new CustomTableModel(COLUMNS_TRACKER, 0);
         public CustomTableModel modelPortfolio = new CustomTableModel(COLUMNS_PORTFOLIO, 0);
@@ -101,6 +100,7 @@ public class Elements {
         public Frames() {
             mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             mainFrame.setSize(550, 700);
+            mainFrame.setMinimumSize(new Dimension(550, 700));
             mainFrame.setJMenuBar(menus.mainMenuBar);
             mainFrame.getContentPane().add(tabs.mainTabs);
         }

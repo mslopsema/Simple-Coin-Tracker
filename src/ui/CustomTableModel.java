@@ -1,5 +1,7 @@
 package ui;
 
+import utils.Formatting;
+
 import javax.swing.table.DefaultTableModel;
 import java.util.HashMap;
 import java.util.Set;
@@ -26,6 +28,11 @@ public class CustomTableModel extends DefaultTableModel {
      */
     public boolean contains(String s) {
         return symbolMap.containsKey(s);
+    }
+
+    public void setChangeValueAt(double value, String key, int col) {
+        super.setValueAt(Formatting.signAndSize(value, 8), symbolMap.get(key), col);
+
     }
 
     /**

@@ -89,9 +89,9 @@ public class CoinTracker {
 
                         if (e.tables.modelTrackers.contains(s)) {
                             e.tables.modelTrackers.setValueAt(btcPrice,  s, 1);
-                            e.tables.modelTrackers.setValueAt(btcChange, s, 2);
+                            e.tables.modelTrackers.setValueAt(Formatting.signAndSize(btcChange, 8), s, 2);
                             e.tables.modelTrackers.setValueAt(usdPrice,  s, 3);
-                            e.tables.modelTrackers.setValueAt(btcChange, s, 4);
+                            e.tables.modelTrackers.setValueAt(Formatting.signAndSize(btcChange, 8), s, 4);
                         }
                         if (e.tables.modelPortfolio.contains(s)) {
                             double count = Double.parseDouble((String) e.tables.modelPortfolio.getValueAt(s, 1));
@@ -111,17 +111,17 @@ public class CoinTracker {
 
                             e.tables.modelPortfolio.setValueAt(btcPrice, s, 2);
                             e.tables.modelPortfolio.setValueAt(btcSum,   s, 3);
-                            e.tables.modelPortfolio.setValueAt(btcDiff,  s, 4);
+                            e.tables.modelPortfolio.setValueAt(Formatting.signAndSize(btcDiff, 8),  s, 4);
                             e.tables.modelPortfolio.setValueAt(usdPrice, s, 5);
                             e.tables.modelPortfolio.setValueAt(usdSum,   s, 6);
-                            e.tables.modelPortfolio.setValueAt(usdDiff,  s, 7);
+                            e.tables.modelPortfolio.setValueAt(Formatting.signAndSize(usdDiff, 8),  s, 7);
                         }
                     }
                     DecimalFormat dfPct = new DecimalFormat("+0.00%;-0.00%");
                     e.textFields.assetValueChangePctBtc.setText(String.valueOf(dfPct.format(sumBtc / sumBtcOld - 1)));
                     e.textFields.assetValueChangePctUsd.setText(String.valueOf(dfPct.format(sumUsd / sumUsdOld - 1)));
-                    e.textFields.assetValueChangRawBtc.setText(Formatting.signAndSize(sumBtc - sumBtcOld, 8));
-                    e.textFields.assetValueChangRawUsd.setText(Formatting.signAndSize(sumUsd - sumUsdOld, 8));
+                    e.textFields.assetValueChangRawBtc.setText(Formatting.signAndSize(sumBtc - sumBtcOld, 10));
+                    e.textFields.assetValueChangRawUsd.setText(Formatting.signAndSize(sumUsd - sumUsdOld, 10));
 
                     e.updateAssetTotal(sumBtc, sumUsd, true);
                 }
