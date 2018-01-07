@@ -55,7 +55,7 @@ public class CoinTracker {
                 try {
                     long startTimeLoop = System.currentTimeMillis();
                     if (!api.updatePrice(e)) faults++;
-                    System.out.println("Cycles : " + cycles++ + " Faults : " + faults +
+                    e.logStatus("Cycles : " + cycles++ + " Faults : " + faults +
                             " LoopTime : " + (System.currentTimeMillis() - startTimeLoop) +
                             " RunTime : "  + (System.currentTimeMillis() - startTimeThread));
                     Thread.sleep(e.refreshRate * 1000);

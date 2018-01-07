@@ -1,33 +1,17 @@
 package ui;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-import java.awt.Dimension;
-import java.awt.Event;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -36,8 +20,9 @@ import api.ApiBase;
 import utils.Files;
 
 public class Elements {
-    public static final String[] UNITS = {"BTC", "USD"};
-    public double[] ASSET_SUM = new double[UNITS.length]; // {BTC, USD}
+    static final String[] UNITS = {"BTC", "USD"};
+    double[] ASSET_SUM = new double[UNITS.length]; // {BTC, USD}
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     public int refreshRate = 10; // s
 
     public class Buttons {
@@ -61,7 +46,10 @@ public class Elements {
         public JTextField assetValueChangePctBtc = new JTextField("0", 6);
         public JTextField assetValueChangePctUsd = new JTextField("0", 6);
 
-        public TextFields() {
+        JTextField trackerStatus = new JTextField();
+        JTextField portfolioStatus = new JTextField();
+
+        TextFields() {
             assetValueTracker.setEditable(false);
             assetValuePortfolio.setEditable(false);
             addTrackerSymbol.setToolTipText("Separate multiple symbols with a comma ','");
@@ -69,16 +57,18 @@ public class Elements {
             assetValueChangRawUsd.setEditable(false);
             assetValueChangePctBtc.setEditable(false);
             assetValueChangePctUsd.setEditable(false);
+            trackerStatus.setEditable(false);
+            portfolioStatus.setEditable(false);
         }
     }
 
     public class Labels {
-        public JLabel addPortfolioSymbol = new JLabel("Symbol");
-        public JLabel addPortfolioCount = new JLabel("Count");
-        public JLabel assetValueChangRawBtc = new JLabel("BTC");
-        public JLabel assetValueChangRawUsd = new JLabel("USD");
-        public JLabel assetValueChangePctBtc = new JLabel("Δ BTC");
-        public JLabel assetValueChangePctUsd = new JLabel("Δ USD");
+        public final JLabel addPortfolioSymbol = new JLabel("Symbol");
+        public final JLabel addPortfolioCount = new JLabel("Count");
+        public final JLabel assetValueChangRawBtc = new JLabel("BTC");
+        public final JLabel assetValueChangRawUsd = new JLabel("USD");
+        public final JLabel assetValueChangePctBtc = new JLabel("Δ BTC");
+        public final JLabel assetValueChangePctUsd = new JLabel("Δ USD");
     }
 
     public class ComboBoxes {
@@ -98,8 +88,8 @@ public class Elements {
     }
 
     public class Tables {
-        public final String[] COLUMNS_TRACKER = {"Tracker", "Price/BTC", "1day Δ% BTC", "Price/USD", "1day Δ% USD"};
-        public final String[] COLUMNS_PORTFOLIO = {"Symbol", "Quantity", "Price/BTC", "Value/BTC", "1day Δ BTC", "Price/USD", "Value/USD", "1day Δ USD"};
+        final String[] COLUMNS_TRACKER = {"Tracker", "Price/BTC", "1day Δ% BTC", "Price/USD", "1day Δ% USD"};
+        final String[] COLUMNS_PORTFOLIO = {"Symbol", "Quantity", "Price/BTC", "Value/BTC", "1day Δ BTC", "Price/USD", "Value/USD", "1day Δ USD"};
         public CustomTableModel modelTrackers = new CustomTableModel(COLUMNS_TRACKER, 0);
         public CustomTableModel modelPortfolio = new CustomTableModel(COLUMNS_PORTFOLIO, 0);
         public JTable trackers = new JTable(modelTrackers);
@@ -133,6 +123,7 @@ public class Elements {
         void deleteRow(JTable table, int row) {
             String key = (String) table.getValueAt(row, 0);
             ((CustomTableModel) table.getModel()).removeRow(key);
+            logStatus("Delet Row : " + row + " : " + key);
         }
     }
 
@@ -150,10 +141,10 @@ public class Elements {
 
     public class Menus {
         public JMenuBar mainMenuBar = new JMenuBar();
-        public JMenu fileMenu = new JMenu("File");
-        public JMenuItem openItem = new JMenuItem("Open");
-        public JMenuItem saveItem = new JMenuItem("Save");
-        public JMenuItem clearItem = new JMenuItem("Clear");
+        JMenu fileMenu = new JMenu("File");
+        JMenuItem openItem = new JMenuItem("Open");
+        JMenuItem saveItem = new JMenuItem("Save");
+        JMenuItem clearItem = new JMenuItem("Clear");
 
         ActionListener alOpen = new ActionListener() {
             public void actionPerformed(ActionEvent event) {
@@ -169,6 +160,7 @@ public class Elements {
                     assetMap.put(s, count);
                 }
                 Files.saveConfig(tables.modelTrackers.keySet(), assetMap);
+                logStatus("Save Config");
             }
         };
 
@@ -177,6 +169,7 @@ public class Elements {
                 tables.modelTrackers.clear();
                 tables.modelPortfolio.clear();
                 updateAssetTotal(0, 0, true);
+                logStatus("Clear Config");
             }
         };
 
@@ -218,6 +211,7 @@ public class Elements {
                 if (tables.modelPortfolio.contains(s)) continue;
                 tables.modelPortfolio.addRow(new String[]{s, a.get(s)});
             }
+            logStatus("Open Config");
         }
     }
 
@@ -234,12 +228,14 @@ public class Elements {
         JPanel setRefresh = new JPanel();
         JPanel assetValueTracker = new JPanel();
         JPanel trackersTable = new JPanel(new GridLayout());
+        JPanel trackersStatus = new JPanel();
         JPanel trackers = new JPanel();
 
         JPanel addPortfolio = new JPanel();
         JPanel assetValuePortfolio = new JPanel();
         JPanel assetValueChange = new JPanel();
         JPanel portfolioTable = new JPanel(new GridLayout());
+        JPanel portfolioStatus = new JPanel();
         JPanel portfolio = new JPanel();
 
         Panels() {
@@ -260,6 +256,8 @@ public class Elements {
             assetValueTracker.add(comboBoxes.assetValueTracker);
             trackersTable.setBorder(BorderFactory.createTitledBorder("Trackers"));
             trackersTable.add(scrollPanes.trackers);
+            trackersStatus.setLayout(new BoxLayout(trackersStatus, BoxLayout.Y_AXIS));
+            trackersStatus.add(textFields.trackerStatus);
 
             trackers.setLayout(new GridBagLayout());
             gbc.gridx = 0;
@@ -278,6 +276,10 @@ public class Elements {
             gbc.gridy = 1;
             gbc.gridwidth = 3;
             trackers.add(trackersTable, gbc);
+            gbc.gridx = 0;
+            gbc.gridy = 2;
+            gbc.gridwidth = 3;
+            trackers.add(trackersStatus, gbc);
 
             // Portfolio Tab
             addPortfolio.setBorder(BorderFactory.createTitledBorder("Add Asset"));
@@ -304,6 +306,9 @@ public class Elements {
             portfolioTable.setBorder(BorderFactory.createTitledBorder("Assets"));
             portfolioTable.add(scrollPanes.portfolio);
 
+            portfolioStatus.setLayout(new BoxLayout(portfolioStatus, BoxLayout.Y_AXIS));
+            portfolioStatus.add(textFields.portfolioStatus);
+
             portfolio.setLayout(new GridBagLayout());
             gbc.gridx = 0;
             gbc.gridy = 0;
@@ -321,6 +326,10 @@ public class Elements {
             gbc.gridy = 2;
             gbc.gridwidth = 3;
             portfolio.add(portfolioTable, gbc);
+            gbc.gridx = 0;
+            gbc.gridy = 3;
+            gbc.gridwidth = 3;
+            portfolio.add(portfolioStatus, gbc);
         }
     }
 
@@ -362,6 +371,7 @@ public class Elements {
                     String s = st.toUpperCase();
                     if (tables.modelTrackers.contains(s) || !api.contains(s)) continue;
                     tables.modelTrackers.addRow(new String[]{s, "0"});
+                    logStatus("Add Tracker : " + s);
                 }
                 textFields.addTrackerSymbol.setText("");
             }
@@ -373,7 +383,7 @@ public class Elements {
             public void actionPerformed(ActionEvent event) {
                 int rate = Integer.parseInt(textFields.setRefreshRate.getText());
                 if (rate < 1) rate = 1;
-                System.out.println("Set Rate : " + rate + "s");
+                logStatus("Set Rate : " + rate + "s");
                 refreshRate = rate;
             }
         };
@@ -395,6 +405,7 @@ public class Elements {
                 }
                 textFields.addPortfolioSymbol.setText("");
                 textFields.addPortfolioCount.setText("");
+                logStatus("Add Asset : " + s);
             }
         };
         textFields.addPortfolioSymbol.addActionListener(alAddAsset);
@@ -423,5 +434,18 @@ public class Elements {
                 ASSET_SUM[comboBoxes.assetValueTracker.getSelectedIndex()]));
         textFields.assetValuePortfolio.setText(String.valueOf(
                 ASSET_SUM[comboBoxes.assetValuePortfolio.getSelectedIndex()]));
+    }
+
+    /**
+     * For updating the status bar.
+     * The string will also be printed to the console.
+     * @param s Log Status String
+     */
+    public void logStatus(String s) {
+        String timeStamp = dateFormat.format(System.currentTimeMillis());
+        String log = timeStamp + " : " + s;
+        textFields.portfolioStatus.setText(log);
+        textFields.trackerStatus.setText(log);
+        System.out.println(log);
     }
 }
