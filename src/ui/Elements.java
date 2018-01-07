@@ -14,11 +14,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -93,18 +89,32 @@ public class Elements {
 
         MouseAdapter ma = new MouseAdapter() {
             public void mousePressed(MouseEvent me) {
-                JTable table = (JTable) me.getSource();
                 if (me.getClickCount() >= 2) {
-                    int row = table.rowAtPoint(me.getPoint());
-                    String key = (String) table.getValueAt(row, 0);
-                    ((CustomTableModel) table.getModel()).removeRow(key);
+                    JTable table = (JTable) me.getSource();
+                    deleteRow(table, table.rowAtPoint(me.getPoint()));
+                }
+            }
+        };
+
+        KeyAdapter ka = new KeyAdapter() {
+            public void keyPressed(KeyEvent ke) {
+                if (ke.getKeyCode() == KeyEvent.VK_DELETE) {
+                    JTable table = (JTable) ke.getSource();
+                    deleteRow(table, table.getSelectedRow());
                 }
             }
         };
 
         Tables() {
             trackers.addMouseListener(ma);
+            trackers.addKeyListener(ka);
             portfolio.addMouseListener(ma);
+            portfolio.addKeyListener(ka);
+        }
+
+        void deleteRow(JTable table, int row) {
+            String key = (String) table.getValueAt(row, 0);
+            ((CustomTableModel) table.getModel()).removeRow(key);
         }
     }
 
@@ -333,9 +343,15 @@ public class Elements {
         ActionListener assetAL = new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 String s = textFields.addPortfolioSymbol.getText().toUpperCase();
-                if (tables.modelPortfolio.contains(s) || !api.contains(s)) return;
-                String asset_count = textFields.addPortfolioCount.getText();
-                tables.modelPortfolio.addRow(new String[]{s, asset_count});
+                if (!api.contains(s)) return;
+                String count = textFields.addPortfolioCount.getText();
+                if (tables.modelPortfolio.contains(s)) {
+                    // Just update the count if the symbol is alread in the table.
+                    tables.modelPortfolio.setValueAt(count, s, 1);
+                } else {
+                    // Add a new row in the table
+                    tables.modelPortfolio.addRow(new String[]{s, count});
+                }
                 textFields.addPortfolioSymbol.setText("");
                 textFields.addPortfolioCount.setText("");
             }
