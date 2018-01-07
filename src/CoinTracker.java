@@ -28,7 +28,6 @@ public class CoinTracker {
                 e = new Elements(api);
                 e.frames.mainFrame.setTitle(TITLE + " : " + api.HOME);
                 e.frames.mainFrame.setVisible(true);
-                e.loadConfig();
             }
         });
         restartHttpThread();

@@ -13,8 +13,15 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import java.awt.Dimension;
-import java.awt.event.*;
+import java.awt.Event;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -74,9 +81,20 @@ public class Elements {
         public JLabel assetValueChangePctUsd = new JLabel("Δ USD");
     }
 
-    public class ComboBoxs {
+    public class ComboBoxes {
         public JComboBox assetValueTracker   = new JComboBox(UNITS);
         public JComboBox assetValuePortfolio = new JComboBox(UNITS);
+
+        ActionListener comboAction = new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                updateAssetTotal(0, 0, false);
+            }
+        };
+
+        ComboBoxes() {
+            assetValueTracker.addActionListener(comboAction);
+            assetValuePortfolio.addActionListener(comboAction);
+        }
     }
 
     public class Tables {
@@ -137,15 +155,69 @@ public class Elements {
         public JMenuItem saveItem = new JMenuItem("Save");
         public JMenuItem clearItem = new JMenuItem("Clear");
 
+        ActionListener alOpen = new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                loadConfig();
+            }
+        };
+
+        ActionListener alSave = new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                HashMap<String, String> assetMap = new HashMap<String, String>();
+                for (String s : tables.modelPortfolio.keySet()) {
+                    String count = (String) tables.modelPortfolio.getValueAt(s, 1);
+                    assetMap.put(s, count);
+                }
+                Files.saveConfig(tables.modelTrackers.keySet(), assetMap);
+            }
+        };
+
+        ActionListener alClear = new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                tables.modelTrackers.clear();
+                tables.modelPortfolio.clear();
+                updateAssetTotal(0, 0, true);
+            }
+        };
+
+        KeyStroke keySave = KeyStroke.getKeyStroke(KeyEvent.VK_S, Event.CTRL_MASK);
+        KeyStroke keyOpen = KeyStroke.getKeyStroke(KeyEvent.VK_O, Event.CTRL_MASK);
+
         public Menus() {
-            fileMenu.setMnemonic(KeyEvent.VK_F);
             openItem.setMnemonic(KeyEvent.VK_O);
+            openItem.addActionListener(alOpen);
+            openItem.setAccelerator(keyOpen);
+
             saveItem.setMnemonic(KeyEvent.VK_S);
-            clearItem.setMnemonic(KeyEvent.VK_C);
+            saveItem.addActionListener(alSave);
+            saveItem.setAccelerator(keySave);
+
+            clearItem.addActionListener(alClear);
+
+            fileMenu.setMnemonic(KeyEvent.VK_F);
             fileMenu.add(openItem);
             fileMenu.add(saveItem);
             fileMenu.add(clearItem);
             mainMenuBar.add(fileMenu);
+
+            // By default, open the saved configuration when the program is loaded.
+            loadConfig();
+        }
+
+        public void loadConfig() {
+            Set<String> t = new HashSet<String>();
+            HashMap<String, String> a = new HashMap<String, String>();
+            Files.loadConfig(t, a);
+
+            for (String s : t) {
+                if (tables.modelTrackers.contains(s)) continue;
+                tables.modelTrackers.addRow(new String[]{s, "0"});
+            }
+
+            for (String s : a.keySet()) {
+                if (tables.modelPortfolio.contains(s)) continue;
+                tables.modelPortfolio.addRow(new String[]{s, a.get(s)});
+            }
         }
     }
 
@@ -268,7 +340,7 @@ public class Elements {
     public Buttons buttons = new Buttons();
     public TextFields textFields = new TextFields();
     public Labels labels = new Labels();
-    public ComboBoxs comboBoxes = new ComboBoxs();
+    public ComboBoxes comboBoxes = new ComboBoxes();
     public Tables tables = new Tables();
     public Menus menus = new Menus();
     public ScrollPanes scrollPanes = new ScrollPanes();
@@ -277,36 +349,13 @@ public class Elements {
     public Frames frames = new Frames();
 
     public Elements(ApiBase api) {
-        addActions(api);
+        addComplexActions(api);
     }
 
-    private void addActions(ApiBase api) {
-        // Menus
-        menus.openItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                loadConfig();
-            }
-        });
-        menus.saveItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                HashMap<String, String> assetMap = new HashMap<String, String>();
-                for (String s : tables.modelPortfolio.keySet()) {
-                    String count = (String) tables.modelPortfolio.getValueAt(s, 1);
-                    assetMap.put(s, count);
-                }
-                Files.saveConfig(tables.modelTrackers.keySet(), assetMap);
-            }
-        });
-        menus.clearItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                tables.modelTrackers.clear();
-                tables.modelPortfolio.clear();
-                updateAssetTotal(0, 0, true);
-            }
-        });
+    private void addComplexActions(ApiBase api) {
 
         // Trackers Tab
-        ActionListener addAL = new ActionListener() {
+        ActionListener alAddTracker = new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 String[] str = textFields.addTrackerSymbol.getText().split(",");
                 for (String st : str) {
@@ -317,18 +366,10 @@ public class Elements {
                 textFields.addTrackerSymbol.setText("");
             }
         };
-        textFields.addTrackerSymbol.addActionListener(addAL);
-        buttons.addTrackerSymbol.addActionListener(addAL);
+        textFields.addTrackerSymbol.addActionListener(alAddTracker);
+        buttons.addTrackerSymbol.addActionListener(alAddTracker);
 
-        ActionListener comboAction = new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                updateAssetTotal(0, 0, false);
-            }
-        };
-        comboBoxes.assetValueTracker.addActionListener(comboAction);
-        comboBoxes.assetValuePortfolio.addActionListener(comboAction);
-
-        ActionListener refreshAction = new ActionListener() {
+        ActionListener alSetRefreshRate = new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 int rate = Integer.parseInt(textFields.setRefreshRate.getText());
                 if (rate < 1) rate = 1;
@@ -336,11 +377,11 @@ public class Elements {
                 refreshRate = rate;
             }
         };
-        textFields.setRefreshRate.addActionListener(refreshAction);
-        buttons.setRefreshRate.addActionListener(refreshAction);
+        textFields.setRefreshRate.addActionListener(alSetRefreshRate);
+        buttons.setRefreshRate.addActionListener(alSetRefreshRate);
 
         // Portfolio Tab
-        ActionListener assetAL = new ActionListener() {
+        ActionListener alAddAsset = new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 String s = textFields.addPortfolioSymbol.getText().toUpperCase();
                 if (!api.contains(s)) return;
@@ -356,26 +397,12 @@ public class Elements {
                 textFields.addPortfolioCount.setText("");
             }
         };
-        textFields.addPortfolioSymbol.addActionListener(assetAL);
-        textFields.addPortfolioCount.addActionListener(assetAL);
-        buttons.addPortfolioSymbol.addActionListener(assetAL);
+        textFields.addPortfolioSymbol.addActionListener(alAddAsset);
+        textFields.addPortfolioCount.addActionListener(alAddAsset);
+        buttons.addPortfolioSymbol.addActionListener(alAddAsset);
     }
 
-    public void loadConfig() {
-        Set<String> t = new HashSet<String>();
-        HashMap<String, String> a = new HashMap<String, String>();
-        Files.loadConfig(t, a);
 
-        for (String s : t) {
-            if (tables.modelTrackers.contains(s)) continue;
-            tables.modelTrackers.addRow(new String[]{s, "0"});
-        }
-
-        for (String s : a.keySet()) {
-            if (tables.modelPortfolio.contains(s)) continue;
-            tables.modelPortfolio.addRow(new String[]{s, a.get(s)});
-        }
-    }
 
     /**
      * For updating the Estimated Value of the portfolio.
