@@ -79,14 +79,14 @@ public class CryptoCompare extends ApiBase {
 
             // Crypto Compare has a bug where they send value of '0' for BTC/BTC price
             // It will cause NaN when trying to calculate pricing changes.
-            //if (s.equals("BTC")) {
-            //    btcPrice = 1.0;
-            //    btcChange = 0.0;
-            //}
+            if (s.equals("BTC")) {
+                btcPrice = 1.0;
+                btcChange = 0.0;
+            }
 
             if (e.tables.modelTrackers.contains(s)) {
-                //e.tables.modelTrackers.setValueAt(btcPrice,  s, 1);
-                //e.tables.modelTrackers.setValueAt(Formatting.signAndSize(btcChange, 8), s, 2);
+                e.tables.modelTrackers.setValueAt(btcPrice,  s, 1);
+                e.tables.modelTrackers.setValueAt(Formatting.signAndSize(btcChange, 8), s, 2);
                 e.tables.modelTrackers.setValueAt(usdPrice,  s, 3);
                 e.tables.modelTrackers.setValueAt(Formatting.signAndSize(usdChange, 8), s, 4);
             }
