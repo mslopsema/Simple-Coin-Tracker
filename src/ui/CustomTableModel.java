@@ -1,7 +1,5 @@
 package ui;
 
-import utils.Formatting;
-
 import javax.swing.table.DefaultTableModel;
 import java.util.HashMap;
 import java.util.Set;
@@ -30,11 +28,6 @@ public class CustomTableModel extends DefaultTableModel {
         return symbolMap.containsKey(s);
     }
 
-    public void setChangeValueAt(double value, String key, int col) {
-        super.setValueAt(Formatting.signAndSize(value, 8), symbolMap.get(key), col);
-
-    }
-
     /**
      * For setting the value at a given cell.
      * Using the Symbol in lieu of the row number.
@@ -54,7 +47,7 @@ public class CustomTableModel extends DefaultTableModel {
      * @return Object contained in the given cell.
      */
     public Object getValueAt(String key, int col) {
-        return super.getValueAt(symbolMap.get(key), col);
+        return super.getValueAt(getSymbolIndex(key), col);
     }
 
     /**

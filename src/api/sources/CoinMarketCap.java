@@ -1,4 +1,4 @@
-package api;
+package api.sources;
 
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;

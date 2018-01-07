@@ -1,8 +1,5 @@
 package ui;
 
-import api.CryptoCompare;
-import utils.Files;
-
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -29,6 +26,9 @@ import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+
+import api.ApiBase;
+import utils.Files;
 
 public class Elements {
     public static final String[] UNITS = {"BTC", "USD"};
@@ -88,10 +88,6 @@ public class Elements {
         public CustomTableModel modelPortfolio = new CustomTableModel(COLUMNS_PORTFOLIO, 0);
         public JTable trackers = new JTable(modelTrackers);
         public JTable portfolio = new JTable(modelPortfolio);
-
-        public Tables() {
-            modelTrackers.isCellEditable(1, 1);
-        }
     }
 
     public class Frames {
@@ -252,11 +248,11 @@ public class Elements {
     public Tabs tabs = new Tabs();
     public Frames frames = new Frames();
 
-    public Elements(CryptoCompare api) {
+    public Elements(ApiBase api) {
         addActions(api);
     }
 
-    private void addActions(CryptoCompare api) {
+    private void addActions(ApiBase api) {
         // Menus
         menus.openItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
@@ -287,8 +283,8 @@ public class Elements {
                 String[] str = textFields.addTrackerSymbol.getText().split(",");
                 for (String st : str) {
                     String s = st.toUpperCase();
-                    if (tables.modelTrackers.contains(s) || !api.containsSymbol(s)) continue;
-                    tables.modelTrackers.addRow(new String[]{s});
+                    if (tables.modelTrackers.contains(s) || !api.contains(s)) continue;
+                    tables.modelTrackers.addRow(new String[]{s, "0"});
                 }
                 textFields.addTrackerSymbol.setText("");
             }
@@ -319,7 +315,7 @@ public class Elements {
         ActionListener assetAL = new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 String s = textFields.addPortfolioSymbol.getText().toUpperCase();
-                if (tables.modelPortfolio.contains(s) || !api.containsSymbol(s)) return;
+                if (tables.modelPortfolio.contains(s) || !api.contains(s)) return;
                 String asset_count = textFields.addPortfolioCount.getText();
                 tables.modelPortfolio.addRow(new String[]{s, asset_count});
                 textFields.addPortfolioSymbol.setText("");
@@ -338,7 +334,7 @@ public class Elements {
 
         for (String s : t) {
             if (tables.modelTrackers.contains(s)) continue;
-            tables.modelTrackers.addRow(new String[]{s, "", ""});
+            tables.modelTrackers.addRow(new String[]{s, "0"});
         }
 
         for (String s : a.keySet()) {

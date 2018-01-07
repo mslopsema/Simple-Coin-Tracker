@@ -1,50 +1,65 @@
-package api;
+package api.sources;
 
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.HashSet;
 import java.util.Set;
 
+import api.ApiBase;
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
+import ui.Elements;
 
-public class CoinCap {
-    
+public class CoinCap extends ApiBase {
+
     public static final String URL_COINS   = "http://coincap.io/coins/";
+    public static final String URL_FRONT   = "http://coincap.io/front/";
     public static final String URL_MAP     = "http://coincap.io/map/";
     public static final String URL_CURRENT = "http://coincap.io/page/";
     public static final String URL_HISTORY = "http://coincap.io/history/";
-    
-    Set<String> coins = new HashSet<String>();
-    
+
     public CoinCap() {
-        reloadCoins();
+        HOME = "http://coincap.io/";
     }
-    
-    public void reloadCoins() {
+
+    @Override
+    public void loadSymbols() {
         JsonArray ja = (JsonArray) getHttp(URL_COINS);
-        //JsonArray ja = (JsonArray) getHttp(URL_CURRENT + "BTC");
+        for (JsonValue jv : ja) SYMBOLS.add(jv.asString());
+        System.out.println(SYMBOLS.toString());
+    }
+
+    @Override
+    public boolean updatePrice(Elements e) {
+        JsonArray ja = (JsonArray) getHttp(URL_FRONT);
+        for (JsonValue jv : ja) {
+            JsonObject jo = (JsonObject) jv;
+            String s = jo.getString("short", "");
+            if (s.length() < 1) continue;
+
+            double usdPrice = jo.getDouble("price", 1);
+            double usdChange = jo.getDouble("perc", 0);
+
+
+        }
+        return true;
     }
     
-    public JsonValue getHttp(String url) {
+    private JsonValue getHttp(String url) {
         HttpURLConnection c = null;
         try {
             URL u = new URL(url);
             c = (HttpURLConnection) u.openConnection();
             c.setRequestMethod("GET");
-            //c.setRequestProperty("Limit", "10");
-            c.setConnectTimeout(10000);
+            c.setConnectTimeout(TIMEOUT);
+            c.setRequestProperty("User-Agent", "Simple-Coin-Tracker");
             c.connect();
-            
-            
+
             int status = c.getResponseCode();
             System.out.println(c.getURL() + " -> [" + status + "]");
-            JsonValue jv = Json.parse(new InputStreamReader(c.getInputStream()));
-            System.out.println(jv.toString());
-            return jv;
+            return Json.parse(new InputStreamReader(c.getInputStream()));
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
