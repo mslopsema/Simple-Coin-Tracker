@@ -17,6 +17,8 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -88,6 +90,22 @@ public class Elements {
         public CustomTableModel modelPortfolio = new CustomTableModel(COLUMNS_PORTFOLIO, 0);
         public JTable trackers = new JTable(modelTrackers);
         public JTable portfolio = new JTable(modelPortfolio);
+
+        MouseAdapter ma = new MouseAdapter() {
+            public void mousePressed(MouseEvent me) {
+                JTable table = (JTable) me.getSource();
+                if (me.getClickCount() >= 2) {
+                    int row = table.rowAtPoint(me.getPoint());
+                    String key = (String) table.getValueAt(row, 0);
+                    ((CustomTableModel) table.getModel()).removeRow(key);
+                }
+            }
+        };
+
+        Tables() {
+            trackers.addMouseListener(ma);
+            portfolio.addMouseListener(ma);
+        }
     }
 
     public class Frames {

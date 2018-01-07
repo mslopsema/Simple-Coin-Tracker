@@ -68,6 +68,17 @@ public class CustomTableModel extends DefaultTableModel {
         super.addRow(rowData);
     }
 
+    public void removeRow(String key) {
+        int row = getSymbolIndex(key);
+        symbolMap.remove(key);
+        for (String s : keySet()) {
+            int srow = symbolMap.get(s);
+            if (row < srow)
+                symbolMap.put(s, srow - 1);
+        }
+        super.removeRow(row);
+    }
+
     @Override
     public boolean isCellEditable(int row, int col) {
         return false; // Table is read-only
