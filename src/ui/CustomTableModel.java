@@ -11,10 +11,21 @@ public class CustomTableModel extends DefaultTableModel {
         super(columns, defaultRowCount);
     }
 
-    public int getSymbolIndex(String s) {
+    /**
+     * Accessor for the underlying HashMap.
+     * Will return the ROW associated with the SYMBOL.
+     * @param s The Symbol
+     * @return The corresponding row in the table.
+     */
+    public int get(String s) {
         return symbolMap.get(s);
     }
 
+    /**
+     * Accessor for the underlying HashMap.
+     * Will return a HashSet<String> of the SYMBOLS stored in this table.
+     * @return A set of the SYMBOLS.:
+     */
     public Set<String> keySet() {
         return symbolMap.keySet();
     }
@@ -47,7 +58,7 @@ public class CustomTableModel extends DefaultTableModel {
      * @return Object contained in the given cell.
      */
     public Object getValueAt(String key, int col) {
-        return super.getValueAt(getSymbolIndex(key), col);
+        return super.getValueAt(get(key), col);
     }
 
     /**
@@ -68,8 +79,12 @@ public class CustomTableModel extends DefaultTableModel {
         super.addRow(rowData);
     }
 
+    /**
+     * For removing a row
+     * @param key
+     */
     public void removeRow(String key) {
-        int row = getSymbolIndex(key);
+        int row = get(key);
         symbolMap.remove(key);
         for (String s : keySet()) {
             int srow = symbolMap.get(s);
