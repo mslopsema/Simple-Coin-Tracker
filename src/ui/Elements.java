@@ -46,8 +46,7 @@ public class Elements {
         public JTextField assetValueChangePctBtc = new JTextField("0", 6);
         public JTextField assetValueChangePctUsd = new JTextField("0", 6);
 
-        JTextField trackerStatus = new JTextField();
-        JTextField portfolioStatus = new JTextField();
+        JTextField status = new JTextField();
 
         TextFields() {
             assetValueTracker.setEditable(false);
@@ -57,8 +56,7 @@ public class Elements {
             assetValueChangRawUsd.setEditable(false);
             assetValueChangePctBtc.setEditable(false);
             assetValueChangePctUsd.setEditable(false);
-            trackerStatus.setEditable(false);
-            portfolioStatus.setEditable(false);
+            status.setEditable(false);
         }
     }
 
@@ -135,7 +133,7 @@ public class Elements {
             mainFrame.setSize(550, 700);
             mainFrame.setMinimumSize(new Dimension(550, 700));
             mainFrame.setJMenuBar(menus.mainMenuBar);
-            mainFrame.getContentPane().add(tabs.mainTabs);
+            mainFrame.getContentPane().add(panels.main);
         }
     }
 
@@ -228,15 +226,16 @@ public class Elements {
         JPanel setRefresh = new JPanel();
         JPanel assetValueTracker = new JPanel();
         JPanel trackersTable = new JPanel(new GridLayout());
-        JPanel trackersStatus = new JPanel();
         JPanel trackers = new JPanel();
 
         JPanel addPortfolio = new JPanel();
         JPanel assetValuePortfolio = new JPanel();
         JPanel assetValueChange = new JPanel();
         JPanel portfolioTable = new JPanel(new GridLayout());
-        JPanel portfolioStatus = new JPanel();
         JPanel portfolio = new JPanel();
+
+        JPanel main = new JPanel(new GridLayout());
+        JPanel status = new JPanel();
 
         Panels() {
             GridBagConstraints gbc = new GridBagConstraints();
@@ -256,8 +255,6 @@ public class Elements {
             assetValueTracker.add(comboBoxes.assetValueTracker);
             trackersTable.setBorder(BorderFactory.createTitledBorder("Trackers"));
             trackersTable.add(scrollPanes.trackers);
-            trackersStatus.setLayout(new BoxLayout(trackersStatus, BoxLayout.Y_AXIS));
-            trackersStatus.add(textFields.trackerStatus);
 
             trackers.setLayout(new GridBagLayout());
             gbc.gridx = 0;
@@ -276,10 +273,6 @@ public class Elements {
             gbc.gridy = 1;
             gbc.gridwidth = 3;
             trackers.add(trackersTable, gbc);
-            gbc.gridx = 0;
-            gbc.gridy = 2;
-            gbc.gridwidth = 3;
-            trackers.add(trackersStatus, gbc);
 
             // Portfolio Tab
             addPortfolio.setBorder(BorderFactory.createTitledBorder("Add Asset"));
@@ -306,9 +299,6 @@ public class Elements {
             portfolioTable.setBorder(BorderFactory.createTitledBorder("Assets"));
             portfolioTable.add(scrollPanes.portfolio);
 
-            portfolioStatus.setLayout(new BoxLayout(portfolioStatus, BoxLayout.Y_AXIS));
-            portfolioStatus.add(textFields.portfolioStatus);
-
             portfolio.setLayout(new GridBagLayout());
             gbc.gridx = 0;
             gbc.gridy = 0;
@@ -326,10 +316,11 @@ public class Elements {
             gbc.gridy = 2;
             gbc.gridwidth = 3;
             portfolio.add(portfolioTable, gbc);
-            gbc.gridx = 0;
-            gbc.gridy = 3;
-            gbc.gridwidth = 3;
-            portfolio.add(portfolioStatus, gbc);
+
+            main.setLayout(new BoxLayout(main, BoxLayout.Y_AXIS));
+            status.setLayout(new BoxLayout(status, BoxLayout.X_AXIS));
+            status.add(textFields.status);
+            status.setMaximumSize(new Dimension(Integer.MAX_VALUE, 15));
         }
     }
 
@@ -339,6 +330,8 @@ public class Elements {
         Tabs() {
             mainTabs.add("Trackers", panels.trackers);
             mainTabs.add("Portfolio", panels.portfolio);
+            panels.main.add(mainTabs);
+            panels.main.add(panels.status);
         }
     }
 
@@ -405,7 +398,7 @@ public class Elements {
                 }
                 textFields.addPortfolioSymbol.setText("");
                 textFields.addPortfolioCount.setText("");
-                logStatus("Add Asset : " + s);
+                logStatus("Add Asset : " + s + " : " + count);
             }
         };
         textFields.addPortfolioSymbol.addActionListener(alAddAsset);
@@ -444,8 +437,7 @@ public class Elements {
     public void logStatus(String s) {
         String timeStamp = dateFormat.format(System.currentTimeMillis());
         String log = timeStamp + " : " + s;
-        textFields.portfolioStatus.setText(log);
-        textFields.trackerStatus.setText(log);
+        textFields.status.setText(log);
         System.out.println(log);
     }
 }
