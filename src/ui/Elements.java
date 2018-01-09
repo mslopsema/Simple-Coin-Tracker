@@ -112,9 +112,11 @@ public class Elements {
         };
 
         Tables() {
+            trackers.getTableHeader().setReorderingAllowed(false);
+            portfolio.getTableHeader().setReorderingAllowed(false);
             trackers.addMouseListener(ma);
-            trackers.addKeyListener(ka);
             portfolio.addMouseListener(ma);
+            trackers.addKeyListener(ka);
             portfolio.addKeyListener(ka);
         }
 
@@ -130,7 +132,6 @@ public class Elements {
 
         public Frames() {
             mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            mainFrame.setSize(550, 700);
             mainFrame.setMinimumSize(new Dimension(550, 700));
             mainFrame.setJMenuBar(menus.mainMenuBar);
             mainFrame.getContentPane().add(panels.main);
@@ -213,14 +214,6 @@ public class Elements {
         }
     }
 
-    public class ScrollPanes {
-        JScrollPane trackers = new JScrollPane(tables.trackers);
-        JScrollPane portfolio = new JScrollPane(tables.portfolio);
-
-        public ScrollPanes() {
-        }
-    }
-
     public class Panels {
         JPanel addTracker = new JPanel();
         JPanel setRefresh = new JPanel();
@@ -239,9 +232,9 @@ public class Elements {
 
         Panels() {
             GridBagConstraints gbc = new GridBagConstraints();
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.weightx = 1.0;
-            gbc.weightx = 1.0;
+            gbc.fill = GridBagConstraints.BOTH;
+            gbc.weightx = 1;
+            gbc.weighty = 1;
 
             // Trackers Tab
             addTracker.setBorder(BorderFactory.createTitledBorder("Add Tracker"));
@@ -254,9 +247,11 @@ public class Elements {
             assetValueTracker.add(textFields.assetValueTracker);
             assetValueTracker.add(comboBoxes.assetValueTracker);
             trackersTable.setBorder(BorderFactory.createTitledBorder("Trackers"));
-            trackersTable.add(scrollPanes.trackers);
+            trackersTable.add(new JScrollPane(tables.trackers), BorderLayout.CENTER);
 
             trackers.setLayout(new GridBagLayout());
+            gbc.weightx = 1;
+            gbc.weighty = 1;
             gbc.gridx = 0;
             gbc.gridy = 0;
             gbc.gridwidth = 1;
@@ -272,6 +267,7 @@ public class Elements {
             gbc.gridx = 0;
             gbc.gridy = 1;
             gbc.gridwidth = 3;
+            gbc.weighty = 1000;
             trackers.add(trackersTable, gbc);
 
             // Portfolio Tab
@@ -297,9 +293,11 @@ public class Elements {
             assetValueChange.add(labels.assetValueChangePctUsd);
 
             portfolioTable.setBorder(BorderFactory.createTitledBorder("Assets"));
-            portfolioTable.add(scrollPanes.portfolio);
+            portfolioTable.add(new JScrollPane(tables.portfolio), BorderLayout.CENTER);
 
             portfolio.setLayout(new GridBagLayout());
+            gbc.weightx = 1;
+            gbc.weighty = 1;
             gbc.gridx = 0;
             gbc.gridy = 0;
             gbc.gridwidth = 2;
@@ -315,6 +313,7 @@ public class Elements {
             gbc.gridx = 0;
             gbc.gridy = 2;
             gbc.gridwidth = 3;
+            gbc.weighty = 1000;
             portfolio.add(portfolioTable, gbc);
 
             main.setLayout(new BoxLayout(main, BoxLayout.Y_AXIS));
@@ -345,7 +344,6 @@ public class Elements {
     public ComboBoxes comboBoxes = new ComboBoxes();
     public Tables tables = new Tables();
     public Menus menus = new Menus();
-    public ScrollPanes scrollPanes = new ScrollPanes();
     public Panels panels = new Panels();
     public Tabs tabs = new Tabs();
     public Frames frames = new Frames();
