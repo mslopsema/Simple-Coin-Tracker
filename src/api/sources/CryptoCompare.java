@@ -11,7 +11,9 @@ import api.ApiBase;
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
+
 import ui.Elements;
+import ui.Record;
 import utils.Formatting;
 
 /**
@@ -86,18 +88,24 @@ public class CryptoCompare extends ApiBase {
             }
 
             if (e.tables.modelTrackers.contains(s)) {
-                e.tables.modelTrackers.setValueAt(btcPrice,  s, 1);
-                e.tables.modelTrackers.setValueAt(Formatting.signAndSize(btcChange, 8), s, 2);
-                e.tables.modelTrackers.setValueAt(usdPrice,  s, 3);
-                e.tables.modelTrackers.setValueAt(Formatting.signAndSize(usdChange, 8), s, 4);
+                Record r = e.tables.modelTrackers.get(s);
+                r.priceBtc = btcPrice;
+                r.deltaBtc = btcChange;
+                r.priceUsd = usdPrice;
+                r.deltaUsd = usdChange;
+                //e.tables.modelTrackers.setValueAt(btcPrice,  s, 1);
+                //e.tables.modelTrackers.setValueAt(Formatting.signAndSize(btcChange, 8), s, 2);
+                //e.tables.modelTrackers.setValueAt(usdPrice,  s, 3);
+                //e.tables.modelTrackers.setValueAt(Formatting.signAndSize(usdChange, 8), s, 4);
             }
             if (e.tables.modelPortfolio.contains(s)) {
-                double count = Double.valueOf((String) e.tables.modelPortfolio.getValueAt(s, 1));
+                Record r = e.tables.modelPortfolio.get(s);
+                //double count = Double.valueOf((String) e.tables.modelPortfolio.getValueAt(s, 1));
 
                 btcChange /= 100;
                 usdChange /= 100;
-                double btcSum = btcPrice * count;
-                double usdSum = usdPrice * count;
+                double btcSum = btcPrice * r.count;
+                double usdSum = usdPrice * r.count;
                 sumBtc += btcSum;
                 sumUsd += usdSum;
                 double btcSumOld = btcSum / (btcChange + 1);
@@ -107,14 +115,22 @@ public class CryptoCompare extends ApiBase {
                 sumBtcOld += btcSumOld;
                 sumUsdOld += usdSumOld;
 
-                e.tables.modelPortfolio.setValueAt(btcPrice, s, 2);
-                e.tables.modelPortfolio.setValueAt(btcSum,   s, 3);
-                e.tables.modelPortfolio.setValueAt(Formatting.signAndSize(btcDiff, 8),  s, 4);
-                e.tables.modelPortfolio.setValueAt(usdPrice, s, 5);
-                e.tables.modelPortfolio.setValueAt(usdSum,   s, 6);
-                e.tables.modelPortfolio.setValueAt(Formatting.signAndSize(usdDiff, 8),  s, 7);
+                r.priceBtc = btcPrice;
+                r.valueBtc = btcSum;
+                r.deltaBtc = btcDiff;
+                r.priceUsd = usdPrice;
+                r.valueUsd = usdSum;
+                r.deltaUsd = usdDiff;
+                //e.tables.modelPortfolio.setValueAt(btcPrice, s, 2);
+                //e.tables.modelPortfolio.setValueAt(btcSum,   s, 3);
+                //e.tables.modelPortfolio.setValueAt(Formatting.signAndSize(btcDiff, 8),  s, 4);
+                //e.tables.modelPortfolio.setValueAt(usdPrice, s, 5);
+                //e.tables.modelPortfolio.setValueAt(usdSum,   s, 6);
+                //e.tables.modelPortfolio.setValueAt(Formatting.signAndSize(usdDiff, 8),  s, 7);
             }
         }
+        e.tables.modelTrackers.fireTableDataChanged();
+        e.tables.modelPortfolio.fireTableDataChanged();
         DecimalFormat dfPct = new DecimalFormat("+0.00%;-0.00%");
         e.textFields.assetValueChangePctBtc.setText(String.valueOf(dfPct.format(sumBtc / sumBtcOld - 1)));
         e.textFields.assetValueChangePctUsd.setText(String.valueOf(dfPct.format(sumUsd / sumUsdOld - 1)));

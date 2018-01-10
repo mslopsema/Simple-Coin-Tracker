@@ -86,10 +86,8 @@ public class Elements {
     }
 
     public class Tables {
-        final String[] COLUMNS_TRACKER = {"Tracker", "Price/BTC", "1day Δ% BTC", "Price/USD", "1day Δ% USD"};
-        final String[] COLUMNS_PORTFOLIO = {"Symbol", "Quantity", "Price/BTC", "Value/BTC", "1day Δ BTC", "Price/USD", "Value/USD", "1day Δ USD"};
-        public CustomTableModel modelTrackers = new CustomTableModel(COLUMNS_TRACKER, 0);
-        public CustomTableModel modelPortfolio = new CustomTableModel(COLUMNS_PORTFOLIO, 0);
+        public TrackerTableModel modelTrackers = new TrackerTableModel();
+        public PortfolioTableModel modelPortfolio = new PortfolioTableModel();
         public JTable trackers = new JTable(modelTrackers);
         public JTable portfolio = new JTable(modelPortfolio);
 
@@ -112,17 +110,19 @@ public class Elements {
         };
 
         Tables() {
+            trackers.setAutoCreateRowSorter(true);
+            portfolio.setAutoCreateRowSorter(true);
             trackers.getTableHeader().setReorderingAllowed(false);
             portfolio.getTableHeader().setReorderingAllowed(false);
-            trackers.addMouseListener(ma);
-            portfolio.addMouseListener(ma);
+            //trackers.addMouseListener(ma);
+            //portfolio.addMouseListener(ma);
             trackers.addKeyListener(ka);
             portfolio.addKeyListener(ka);
         }
 
         void deleteRow(JTable table, int row) {
             String key = (String) table.getValueAt(row, 0);
-            ((CustomTableModel) table.getModel()).removeRow(key);
+            ((PortfolioTableModel) table.getModel()).removeRow(row);
             logStatus("Delet Row : " + row + " : " + key);
         }
     }
@@ -155,7 +155,7 @@ public class Elements {
             public void actionPerformed(ActionEvent event) {
                 HashMap<String, String> assetMap = new HashMap<String, String>();
                 for (String s : tables.modelPortfolio.keySet()) {
-                    String count = (String) tables.modelPortfolio.getValueAt(s, 1);
+                    String count = String.valueOf(tables.modelPortfolio.get(s).count);
                     assetMap.put(s, count);
                 }
                 Files.saveConfig(tables.modelTrackers.keySet(), assetMap);
@@ -203,12 +203,12 @@ public class Elements {
 
             for (String s : t) {
                 if (tables.modelTrackers.contains(s)) continue;
-                tables.modelTrackers.addRow(new String[]{s, "0"});
+                tables.modelTrackers.addRow(new Record(s));
             }
 
             for (String s : a.keySet()) {
                 if (tables.modelPortfolio.contains(s)) continue;
-                tables.modelPortfolio.addRow(new String[]{s, a.get(s)});
+                tables.modelPortfolio.addRow(new Record(s, Double.valueOf(a.get(s))));
             }
             logStatus("Open Config");
         }
@@ -361,7 +361,7 @@ public class Elements {
                 for (String st : str) {
                     String s = st.toUpperCase();
                     if (tables.modelTrackers.contains(s) || !api.contains(s)) continue;
-                    tables.modelTrackers.addRow(new String[]{s, "0"});
+                    tables.modelTrackers.addRow(new Record(s));
                     logStatus("Add Tracker : " + s);
                 }
                 textFields.addTrackerSymbol.setText("");
@@ -388,11 +388,11 @@ public class Elements {
                 if (!api.contains(s)) return;
                 String count = textFields.addPortfolioCount.getText();
                 if (tables.modelPortfolio.contains(s)) {
-                    // Just update the count if the symbol is alread in the table.
-                    tables.modelPortfolio.setValueAt(count, s, 1);
+                    // Just update the count if the symbol is already in the table.
+                    tables.modelPortfolio.get(s).count = Double.valueOf(count);
                 } else {
                     // Add a new row in the table
-                    tables.modelPortfolio.addRow(new String[]{s, count});
+                    tables.modelPortfolio.addRow(new Record(s, Double.valueOf(count)));
                 }
                 textFields.addPortfolioSymbol.setText("");
                 textFields.addPortfolioCount.setText("");
