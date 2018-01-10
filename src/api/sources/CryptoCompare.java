@@ -53,6 +53,7 @@ public class CryptoCompare extends ApiBase {
         HashSet<String> keys = new HashSet<>();
         keys.addAll(e.tables.modelTrackers.keySet());
         keys.addAll(e.tables.modelPortfolio.keySet());
+        if (keys.size() <= 0) return true;
 
         StringBuilder urlBuilder = new StringBuilder();
         urlBuilder.append(API_PRICE_PREFIX);
