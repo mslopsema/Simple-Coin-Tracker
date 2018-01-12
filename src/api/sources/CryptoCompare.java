@@ -1,20 +1,20 @@
 package api.sources;
 
+import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
+
+import api.ApiBase;
+import ui.Elements;
+import ui.Record;
+import utils.Formatting;
+
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.HashSet;
 import java.util.Set;
-
-import api.ApiBase;
-import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.JsonValue;
-
-import ui.Elements;
-import ui.Record;
-import utils.Formatting;
 
 /**
  * Coin Tracking API Implementation using CryptoCompare APIs
@@ -93,14 +93,9 @@ public class CryptoCompare extends ApiBase {
                 r.deltaBtc = btcChange;
                 r.priceUsd = usdPrice;
                 r.deltaUsd = usdChange;
-                //e.tables.modelTrackers.setValueAt(btcPrice,  s, 1);
-                //e.tables.modelTrackers.setValueAt(Formatting.signAndSize(btcChange, 8), s, 2);
-                //e.tables.modelTrackers.setValueAt(usdPrice,  s, 3);
-                //e.tables.modelTrackers.setValueAt(Formatting.signAndSize(usdChange, 8), s, 4);
             }
             if (e.tables.modelPortfolio.contains(s)) {
                 Record r = e.tables.modelPortfolio.get(s);
-                //double count = Double.valueOf((String) e.tables.modelPortfolio.getValueAt(s, 1));
 
                 btcChange /= 100;
                 usdChange /= 100;
@@ -121,12 +116,6 @@ public class CryptoCompare extends ApiBase {
                 r.priceUsd = usdPrice;
                 r.valueUsd = usdSum;
                 r.deltaUsd = usdDiff;
-                //e.tables.modelPortfolio.setValueAt(btcPrice, s, 2);
-                //e.tables.modelPortfolio.setValueAt(btcSum,   s, 3);
-                //e.tables.modelPortfolio.setValueAt(Formatting.signAndSize(btcDiff, 8),  s, 4);
-                //e.tables.modelPortfolio.setValueAt(usdPrice, s, 5);
-                //e.tables.modelPortfolio.setValueAt(usdSum,   s, 6);
-                //e.tables.modelPortfolio.setValueAt(Formatting.signAndSize(usdDiff, 8),  s, 7);
             }
         }
         e.tables.modelTrackers.fireTableDataChanged();

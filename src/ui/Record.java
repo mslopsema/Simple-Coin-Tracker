@@ -5,8 +5,6 @@ package ui;
  */
 public class Record {
     public String symbol;
-    public int row;
-    public int col;
     public double count;
     public double priceBtc;
     public double valueBtc;

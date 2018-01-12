@@ -13,11 +13,11 @@ import java.util.HashMap;
 import java.util.Set;
 
 public class Files {
-    private static final String FILE_CONFIG = ".sct.config";
-    private static final String KEY_TRACKERS = "trackers";
-    private static final String KEY_ASSETS = "assets";
-    private static final String KEY_SYMBOL = "symbol";
-    private static final String KEY_COUNT = "count";
+    public static final String FILE_CONFIG = ".sct.config";
+    public static final String KEY_TRACKERS = "trackers";
+    public static final String KEY_ASSETS = "assets";
+    public static final String KEY_SYMBOL = "symbol";
+    public static final String KEY_COUNT = "count";
 
     /**
      * For saving configuration to backup file
@@ -25,24 +25,11 @@ public class Files {
      * @param trackers
      * @param assets
      */
-    public static void saveConfig(Set<String> trackers, HashMap<String, String> assets) {
+    public static void saveConfig(JsonArray trackers, JsonArray assets) {
         try {
-
-            // Transform data to JSON
-            JsonArray ja_trackers = new JsonArray();
-            for (String s : trackers) ja_trackers.add(s);
-
-            JsonArray ja_assets = new JsonArray();
-            for (String s : assets.keySet()) {
-                JsonObject j = new JsonObject();
-                j.add(KEY_SYMBOL, s);
-                j.add(KEY_COUNT, assets.get(s));
-                ja_assets.add(j);
-            }
-
             JsonObject root = new JsonObject();
-            root.add(KEY_TRACKERS, ja_trackers);
-            root.add(KEY_ASSETS, ja_assets);
+            root.add(KEY_TRACKERS, trackers);
+            root.add(KEY_ASSETS, assets);
 
             // Save JSON to Config File
             File f = new File(FILE_CONFIG);

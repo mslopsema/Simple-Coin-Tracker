@@ -14,9 +14,13 @@ import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import api.ApiBase;
+import ui.TableModel.CustomTableModel;
+import ui.TableModel.Portfolio;
+import ui.TableModel.Tracker;
 import utils.Files;
 
 public class Elements {
@@ -49,9 +53,9 @@ public class Elements {
         JTextField status = new JTextField();
 
         TextFields() {
+            addTrackerSymbol.setToolTipText("Separate multiple symbols with a comma ','");
             assetValueTracker.setEditable(false);
             assetValuePortfolio.setEditable(false);
-            addTrackerSymbol.setToolTipText("Separate multiple symbols with a comma ','");
             assetValueChangRawBtc.setEditable(false);
             assetValueChangRawUsd.setEditable(false);
             assetValueChangePctBtc.setEditable(false);
@@ -86,8 +90,8 @@ public class Elements {
     }
 
     public class Tables {
-        public TrackerTableModel modelTrackers = new TrackerTableModel();
-        public PortfolioTableModel modelPortfolio = new PortfolioTableModel();
+        public CustomTableModel modelTrackers = new Tracker();
+        public CustomTableModel modelPortfolio = new Portfolio();
         public JTable trackers = new JTable(modelTrackers);
         public JTable portfolio = new JTable(modelPortfolio);
 
@@ -104,6 +108,7 @@ public class Elements {
             public void keyPressed(KeyEvent ke) {
                 if (ke.getKeyCode() == KeyEvent.VK_DELETE) {
                     JTable table = (JTable) ke.getSource();
+                    if (table.getSelectedRow() < 0) return;
                     deleteRow(table, table.getSelectedRow());
                 }
             }
@@ -121,9 +126,9 @@ public class Elements {
         }
 
         void deleteRow(JTable table, int row) {
-            String key = (String) table.getValueAt(row, 0);
-            ((PortfolioTableModel) table.getModel()).removeRow(row);
-            logStatus("Delet Row : " + row + " : " + key);
+            CustomTableModel ctm = (CustomTableModel) table.getModel();
+            logStatus("Delete Row : " + row + " : " + ctm.get(row).symbol);
+            ctm.removeRow(row);
         }
     }
 
@@ -147,6 +152,8 @@ public class Elements {
 
         ActionListener alOpen = new ActionListener() {
             public void actionPerformed(ActionEvent event) {
+                tables.modelTrackers.clear();
+                tables.modelPortfolio.clear();
                 loadConfig();
             }
         };
@@ -154,11 +161,12 @@ public class Elements {
         ActionListener alSave = new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 HashMap<String, String> assetMap = new HashMap<String, String>();
-                for (String s : tables.modelPortfolio.keySet()) {
-                    String count = String.valueOf(tables.modelPortfolio.get(s).count);
-                    assetMap.put(s, count);
+                Iterator<Record> it = tables.modelPortfolio.iterator();
+                while (it.hasNext()) {
+                    Record r = it.next();
+                    assetMap.put(r.symbol, String.valueOf(r.count));
                 }
-                Files.saveConfig(tables.modelTrackers.keySet(), assetMap);
+                Files.saveConfig(tables.modelTrackers.toJsonArray(), tables.modelPortfolio.toJsonArray());
                 logStatus("Save Config");
             }
         };
