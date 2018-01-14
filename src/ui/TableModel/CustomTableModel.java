@@ -113,6 +113,19 @@ public abstract class CustomTableModel extends AbstractTableModel {
     }
 
     /**
+     * For swapping the position of 2 rows.
+     * @param row1
+     * @param row2
+     */
+    public void swapRows(int row1, int row2) {
+        Record temp = mRecordList.get(row1);
+        mRecordList.set(row1, mRecordList.get(row2));
+        mRecordList.set(row2, temp);
+        fireTableRowsUpdated(row1, row1);
+        fireTableRowsUpdated(row2, row2);
+    }
+
+    /**
      * For storing the Record data into JSON formatting.
      * Only SYMBOL and COUNT is saved.
      * @return

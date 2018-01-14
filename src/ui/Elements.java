@@ -95,21 +95,28 @@ public class Elements {
         public JTable trackers = new JTable(modelTrackers);
         public JTable portfolio = new JTable(modelPortfolio);
 
-        MouseAdapter ma = new MouseAdapter() {
-            public void mousePressed(MouseEvent me) {
-                if (me.getClickCount() >= 2) {
-                    JTable table = (JTable) me.getSource();
-                    deleteRow(table, table.rowAtPoint(me.getPoint()));
-                }
-            }
-        };
-
         KeyAdapter ka = new KeyAdapter() {
             public void keyPressed(KeyEvent ke) {
                 if (ke.getKeyCode() == KeyEvent.VK_DELETE) {
                     JTable table = (JTable) ke.getSource();
                     if (table.getSelectedRow() < 0) return;
                     deleteRow(table, table.getSelectedRow());
+                }
+
+                if (ke.isControlDown()) {
+                    if (ke.getKeyCode() == KeyEvent.VK_UP) {
+                        JTable table = (JTable) ke.getSource();
+                        if (table.getSelectedRow() < 0) return;
+                        int row = table.getSelectedRow();
+                        swapRows(table, row, row - 1);
+                        table.setRowSelectionInterval(row - 1, row - 1);
+                    } else if (ke.getKeyCode() == KeyEvent.VK_DOWN) {
+                        JTable table = (JTable) ke.getSource();
+                        if (table.getSelectedRow() < 0) return;
+                        int row = table.getSelectedRow();
+                        swapRows(table, row, row + 1);
+                        table.setRowSelectionInterval(row + 1, row + 1);
+                    }
                 }
             }
         };
@@ -119,8 +126,6 @@ public class Elements {
             portfolio.setAutoCreateRowSorter(true);
             trackers.getTableHeader().setReorderingAllowed(false);
             portfolio.getTableHeader().setReorderingAllowed(false);
-            //trackers.addMouseListener(ma);
-            //portfolio.addMouseListener(ma);
             trackers.addKeyListener(ka);
             portfolio.addKeyListener(ka);
         }
@@ -129,6 +134,13 @@ public class Elements {
             CustomTableModel ctm = (CustomTableModel) table.getModel();
             logStatus("Delete Row : " + row + " : " + ctm.get(row).symbol);
             ctm.removeRow(row);
+        }
+
+        void swapRows(JTable table, int row1, int row2) {
+            CustomTableModel ctm = (CustomTableModel) table.getModel();
+            logStatus("Swap Rows : " + row1 + " " + ctm.get(row1).symbol +
+                                  " : " + row2 + " " + ctm.get(row2).symbol);
+            ctm.swapRows(row1, row2);
         }
     }
 
