@@ -13,12 +13,12 @@ public class Record {
     public double valueUsd;
     public double deltaUsd;
 
-    Record(String symbol, double count) {
+    public Record(String symbol, double count) {
         this.symbol = symbol;
         this.count = count;
     }
 
-    Record(String symbol) {
+    public Record(String symbol) {
         this.symbol = symbol;
     }
 }

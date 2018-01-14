@@ -115,6 +115,9 @@ public abstract class CustomTableModel extends AbstractTableModel {
      * @param row2
      */
     public void swapRows(int row1, int row2) {
+        if (row1 < 0 || row1 >= mRecordList.size()) return;
+        if (row2 < 0 || row2 >= mRecordList.size()) return;
+
         Record temp = mRecordList.get(row1);
         mRecordList.set(row1, mRecordList.get(row2));
         mRecordList.set(row2, temp);
