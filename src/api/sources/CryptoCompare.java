@@ -52,7 +52,7 @@ public class CryptoCompare extends ApiBase {
 
     @Override
     public boolean updatePrice(Elements e) {
-        HashSet<String> keys = new HashSet<String>();
+        HashSet<String> keys = new HashSet<>();
         keys.addAll(e.tables.modelTrackers.keySet());
         keys.addAll(e.tables.modelPortfolio.keySet());
         if (keys.size() <= 0) return true;
