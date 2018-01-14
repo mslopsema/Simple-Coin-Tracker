@@ -44,7 +44,6 @@ public class CoinTracker {
 
     private class HttpThread implements Runnable {
 
-        @Override
         public void run() {
             api.loadSymbols();
             long startTimeThread = System.currentTimeMillis();

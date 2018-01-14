@@ -6,8 +6,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -372,7 +370,7 @@ public class Elements {
         addComplexActions(api);
     }
 
-    private void addComplexActions(ApiBase api) {
+    private void addComplexActions(final ApiBase api) {
 
         // Trackers Tab
         ActionListener alAddTracker = new ActionListener() {

@@ -13,12 +13,10 @@ public abstract class CustomTableModel extends AbstractTableModel {
     protected String[] mColumnNames;
     protected ArrayList<Record> mRecordList = new ArrayList<Record>();
 
-    @Override
     public int getRowCount() {
         return mRecordList.size();
     }
 
-    @Override
     public int getColumnCount() {
         return mColumnNames.length;
     }
@@ -33,7 +31,6 @@ public abstract class CustomTableModel extends AbstractTableModel {
         return columnIndex == 0 ? String.class : Double.class;
     }
 
-    @Override
     public abstract Object getValueAt(int row, int col);
 
     @Override
@@ -68,7 +65,7 @@ public abstract class CustomTableModel extends AbstractTableModel {
      * @return A set of the SYMBOLS.
      */
     public Set<String> keySet() {
-        Set<String> keys = new HashSet<>();
+        Set<String> keys = new HashSet<String>();
         for (Record r : mRecordList) keys.add(r.symbol);
         return keys;
     }

@@ -4,7 +4,7 @@ import javax.swing.JPanel;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
-import org.jfree.chart.ChartUtils;
+import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisLocation;
 import org.jfree.chart.axis.NumberAxis;
@@ -16,7 +16,8 @@ import org.jfree.data.time.RegularTimePeriod;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYDataset;
-import org.jfree.chart.ui.ApplicationFrame;
+import org.jfree.ui.ApplicationFrame;
+
 
 /**
  * An example of a time series chart with multiple axes.
@@ -43,7 +44,6 @@ public class MultipleAxisDemo extends ApplicationFrame {
      * @return The chart.
      */
     private static JFreeChart createChart() {
-
         XYDataset dataset1 = createDataset("Series 1", 100.0, new Minute(),
                 200);
 
@@ -83,7 +83,7 @@ public class MultipleAxisDemo extends ApplicationFrame {
         plot.mapDatasetToRangeAxis(1, 1);
 
         plot.setRenderer(1, new XYLineAndShapeRenderer(true, false));
-        ChartUtils.applyCurrentTheme(chart);
+        ChartUtilities.applyCurrentTheme(chart);
 
         return chart;
 

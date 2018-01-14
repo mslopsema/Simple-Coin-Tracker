@@ -5,7 +5,7 @@ import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
-import org.jfree.chart.ChartUtils;
+import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisLocation;
 import org.jfree.chart.axis.NumberAxis;
@@ -58,7 +58,7 @@ public class Graphs extends JPanel {
         //xyp.mapDatasetToRangeAxis(1, 1);
 
         xyp.setRenderer(1, new XYLineAndShapeRenderer(true, false));
-        ChartUtils.applyCurrentTheme(jfc);
+        ChartUtilities.applyCurrentTheme(jfc);
 
         ChartPanel cp = new ChartPanel(jfc);
 
