@@ -67,14 +67,16 @@ public class CryptoCompare extends ApiBase {
         StringBuilder urlBuilder = new StringBuilder();
         urlBuilder.append(API_PRICE_PREFIX);
         urlBuilder.append(queryBuilder("?fsyms=", keys));
-        urlBuilder.append("&tsyms=BTC,USD");
+        urlBuilder.append("&tsyms=BTC,ETH,USD");
         JsonObject jo = getHttp(urlBuilder.toString());
         if (jo == null) return false;
 
         double sumUsd = 0;
         double sumBtc = 0;
+        double sumEth = 0;
         double sumUsdOld = 0;
         double sumBtcOld = 0;
+        double sumEthOld = 0;
 
         JsonObject rawObj = (JsonObject) jo.get("RAW");
         for (String s : rawObj.names()) {
@@ -83,21 +85,31 @@ public class CryptoCompare extends ApiBase {
 
             double btcPrice  = getDouble(((JsonObject) obj.get("BTC")).get("PRICE"));
             double btcChange = getDouble(((JsonObject) obj.get("BTC")).get("CHANGEPCT24HOUR"));
+            double ethPrice  = getDouble(((JsonObject) obj.get("ETH")).get("PRICE"));
+            double ethChange = getDouble(((JsonObject) obj.get("ETH")).get("CHANGEPCT24HOUR"));
             double usdPrice  = getDouble(((JsonObject) obj.get("USD")).get("PRICE"));
             double usdChange = getDouble(((JsonObject) obj.get("USD")).get("CHANGEPCT24HOUR"));
-            //System.out.println(s + " : " + btcPrice + " " + btcChange + " " + usdPrice + " " + usdChange);
+            /*System.out.println(s + " : " +
+                    btcPrice + " " + btcChange + " " +
+                    ethPrice + " " + ethChange + " " +
+                    usdPrice + " " + usdChange);*/
 
             // Crypto Compare has a bug where they send value of '0' for BTC/BTC price
             // It will cause NaN when trying to calculate pricing changes.
             if (s.equals("BTC")) {
                 btcPrice = 1.0;
                 btcChange = 0.0;
+            } else if (s.equals("ETH")) {
+                ethPrice = 1.0;
+                ethChange = 0.0;
             }
 
             if (e.tables.modelTrackers.contains(s)) {
                 Record r = e.tables.modelTrackers.get(s);
                 r.priceBtc = btcPrice;
                 r.deltaBtc = btcChange;
+                r.priceEth = ethPrice;
+                r.deltaEth = ethChange;
                 r.priceUsd = usdPrice;
                 r.deltaUsd = usdChange;
             }
@@ -105,21 +117,30 @@ public class CryptoCompare extends ApiBase {
                 Record r = e.tables.modelPortfolio.get(s);
 
                 btcChange /= 100;
+                ethChange /= 100;
                 usdChange /= 100;
                 double btcSum = btcPrice * r.count;
+                double ethSum = ethPrice * r.count;
                 double usdSum = usdPrice * r.count;
                 sumBtc += btcSum;
+                sumEth += ethSum;
                 sumUsd += usdSum;
                 double btcSumOld = btcSum / (btcChange + 1);
+                double ethSumOld = ethSum / (ethChange + 1);
                 double usdSumOld = usdSum / (usdChange + 1);
                 double btcDiff = btcSum - btcSumOld;
+                double ethDiff = ethSum - ethSumOld;
                 double usdDiff = usdSum - usdSumOld;
                 sumBtcOld += btcSumOld;
+                sumEthOld += ethSumOld;
                 sumUsdOld += usdSumOld;
 
                 r.priceBtc = btcPrice;
                 r.valueBtc = btcSum;
                 r.deltaBtc = btcDiff;
+                r.priceEth = ethPrice;
+                r.valueEth = ethSum;
+                r.deltaEth = ethDiff;
                 r.priceUsd = usdPrice;
                 r.valueUsd = usdSum;
                 r.deltaUsd = usdDiff;
@@ -132,7 +153,7 @@ public class CryptoCompare extends ApiBase {
         e.textFields.assetValueChangePctUsd.setText(String.valueOf(dfPct.format(sumUsd / sumUsdOld - 1)));
         e.textFields.assetValueChangRawBtc.setText(Formatting.signAndSize(sumBtc - sumBtcOld, 10));
         e.textFields.assetValueChangRawUsd.setText(Formatting.signAndSize(sumUsd - sumUsdOld, 10));
-        e.updateAssetTotal(sumBtc, sumUsd, true);
+        e.updateAssetTotal(sumBtc, sumEth, sumUsd, true);
 
         return true;
     }
@@ -183,7 +204,7 @@ public class CryptoCompare extends ApiBase {
 
             int status = c.getResponseCode();
             JsonObject jo = (JsonObject) Json.parse(new InputStreamReader(c.getInputStream()));
-            System.out.println(c.getURL() + " -> [" + status + "]");
+            //System.out.println(c.getURL() + " -> [" + status + "]");
             //System.out.println(jo.toString());
             return jo;
         } catch (Exception e) {

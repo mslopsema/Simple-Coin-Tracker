@@ -10,10 +10,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 import api.ApiBase;
 import ui.Graphs.MultipleAxisDemo;
@@ -24,8 +21,8 @@ import ui.TableModel.Tracker;
 import utils.Files;
 
 public class Elements {
-    static final String[] UNITS = {"BTC", "USD"};
-    double[] ASSET_SUM = new double[UNITS.length]; // {BTC, USD}
+    static final String[] UNITS = {"BTC", "ETH", "USD"};
+    double[] ASSET_SUM = new double[UNITS.length];
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     public int refreshRate = 10; // s
 
@@ -79,7 +76,7 @@ public class Elements {
 
         ActionListener comboAction = new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                updateAssetTotal(0, 0, false);
+                updateAssetTotal(0, 0, 0, false);
             }
         };
 
@@ -187,7 +184,7 @@ public class Elements {
             public void actionPerformed(ActionEvent event) {
                 tables.modelTrackers.clear();
                 tables.modelPortfolio.clear();
-                updateAssetTotal(0, 0, true);
+                updateAssetTotal(0, 0, 0, true);
                 logStatus("Clear Config");
             }
         };
@@ -441,12 +438,14 @@ public class Elements {
      * @param USD US Dollar Value
      * @param isNew To denote if the values are being changed, or if simply the units configuration is changing
      */
-    public void updateAssetTotal(double BTC, double USD, boolean isNew) {
+    public void updateAssetTotal(double BTC, double ETH, double USD, boolean isNew) {
         MathContext mc = new MathContext(10, RoundingMode.HALF_DOWN);
         BTC = Double.parseDouble(new BigDecimal(BTC, mc).toPlainString());
+        ETH = Double.parseDouble(new BigDecimal(ETH, mc).toPlainString());
         USD = Double.parseDouble(new BigDecimal(USD, mc).toPlainString());
 
-        if (isNew) ASSET_SUM = new double[] {BTC, USD};
+        if (isNew) ASSET_SUM = new double[] {BTC, ETH, USD};
+        System.out.println("TOTAL : " + Arrays.toString(ASSET_SUM));
         textFields.assetValueTracker.setText(String.valueOf(
                 ASSET_SUM[comboBoxes.assetValueTracker.getSelectedIndex()]));
         textFields.assetValuePortfolio.setText(String.valueOf(

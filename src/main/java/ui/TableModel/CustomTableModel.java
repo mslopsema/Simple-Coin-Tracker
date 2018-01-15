@@ -135,7 +135,7 @@ public abstract class CustomTableModel extends AbstractTableModel {
         for (Record r : mRecordList) {
             JsonObject jo = new JsonObject();
             jo.add(Files.KEY_SYMBOL, r.symbol);
-            jo.add(Files.KEY_COUNT, r.count);
+            jo.add(Files.KEY_COUNT, String.valueOf(r.count));
             ja.add(jo);
         }
         return ja;

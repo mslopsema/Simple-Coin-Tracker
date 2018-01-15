@@ -3,7 +3,10 @@ package ui.TableModel;
 public class Portfolio extends CustomTableModel {
 
     public Portfolio() {
-        mColumnNames = new String[]{"Symbol", "Quantity", "Price/BTC", "Value/BTC", "1day Δ BTC", "Price/USD", "Value/USD", "1day Δ USD"};
+        mColumnNames = new String[]{"Symbol", "Quantity",
+                "Price/BTC", "Value/BTC", "1day Δ BTC",
+                "Price/ETH", "Value/ETH", "1day Δ ETH",
+                "Price/USD", "Value/USD", "1day Δ USD"};
     }
 
     @Override
@@ -14,9 +17,12 @@ public class Portfolio extends CustomTableModel {
             case 2 : return mRecordList.get(row).priceBtc;
             case 3 : return mRecordList.get(row).valueBtc;
             case 4 : return mRecordList.get(row).deltaBtc;
-            case 5 : return mRecordList.get(row).priceUsd;
-            case 6 : return mRecordList.get(row).valueUsd;
-            case 7 : return mRecordList.get(row).deltaUsd;
+            case 5 : return mRecordList.get(row).priceEth;
+            case 6 : return mRecordList.get(row).valueEth;
+            case 7 : return mRecordList.get(row).deltaEth;
+            case 8 : return mRecordList.get(row).priceUsd;
+            case 9 : return mRecordList.get(row).valueUsd;
+            case 10 : return mRecordList.get(row).deltaUsd;
             default : return null;
         }
     }

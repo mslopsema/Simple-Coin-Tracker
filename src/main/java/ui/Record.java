@@ -9,6 +9,9 @@ public class Record {
     public double priceBtc;
     public double valueBtc;
     public double deltaBtc;
+    public double priceEth;
+    public double valueEth;
+    public double deltaEth;
     public double priceUsd;
     public double valueUsd;
     public double deltaUsd;
