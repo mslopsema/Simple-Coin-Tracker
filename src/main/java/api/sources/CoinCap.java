@@ -46,6 +46,11 @@ public class CoinCap extends ApiBase {
         }
         return true;
     }
+
+    @Override
+    public boolean getHistory(Elements e) {
+        return true;
+    }
     
     private JsonValue getHttp(String url) {
         HttpURLConnection c = null;

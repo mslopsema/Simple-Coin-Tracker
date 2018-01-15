@@ -4,7 +4,7 @@ import ui.Elements;
 
 import java.util.HashSet;
 
-public class ApiBase {
+public abstract class ApiBase {
     protected static final int TIMEOUT = 10000;
 
     public String HOME = "Source Home Url";
@@ -16,7 +16,9 @@ public class ApiBase {
         return SYMBOLS.contains(s);
     }
 
-    public void loadSymbols() {}
+    public abstract void loadSymbols();
 
-    public boolean updatePrice(Elements e) {return false; }
+    public abstract boolean updatePrice(Elements e);
+
+    public abstract boolean getHistory(Elements e);
 }

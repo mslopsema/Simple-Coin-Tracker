@@ -1,10 +1,15 @@
 package api.sources;
 
 import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
 import api.ApiBase;
+import org.jfree.chart.ChartUtils;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.time.*;
+import org.jfree.data.xy.XYDataset;
 import ui.Elements;
 import ui.Record;
 import utils.Formatting;
@@ -13,6 +18,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.DecimalFormat;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -35,7 +41,8 @@ public class CryptoCompare extends ApiBase {
 
     private static final String API_COIN_LIST = "https://min-api.cryptocompare.com/data/all/coinlist";
     private static final String API_PRICE_PREFIX = "https://min-api.cryptocompare.com/data/pricemultifull";
-    private static final String API_HISTORY_PREFIX = "https://min-api.cryptocompare.com/data/histominute";
+    private static final String API_HISTORY_MIN_PREFIX = "https://min-api.cryptocompare.com/data/histominute?fsym=";
+    private static final String API_HISTORY_MIN_SUFFIX = "&tsym=USD&limit=1440&e=CCCAGG";
     private static final String KEY_DATA = "Data";
     private static final int HISTORY = 100;
 
@@ -137,6 +144,34 @@ public class CryptoCompare extends ApiBase {
         return sb.toString();
     }
 
+    public boolean getHistory(Elements e) {
+
+        TimeSeriesCollection tsc = new TimeSeriesCollection();
+
+        for (String key : e.tables.modelPortfolio.keySet()) {
+            String url = API_HISTORY_MIN_PREFIX + key + API_HISTORY_MIN_SUFFIX;
+            JsonObject jo = getHttp(url);
+
+            TimeSeries ts = new TimeSeries(key);
+            JsonArray data = jo.get("Data").asArray();
+            double first = -1;
+
+            for (JsonValue jv : data) {
+                JsonObject obj = jv.asObject();
+                long time = obj.getLong("time", 1453116960);
+                double close = obj.getDouble("close", 1);
+                if (first < 0) first = close;
+                double percentage = close / first;
+
+                Date date = new Date(time * 1000);
+                ts.addOrUpdate(new Minute(date), percentage);
+            }
+            tsc.addSeries(ts);
+        }
+        e.graphs.portfolio.setData(tsc);
+        return true;
+    }
+
     private JsonObject getHttp(String url) {
         HttpURLConnection c = null;
         try {
@@ -148,7 +183,7 @@ public class CryptoCompare extends ApiBase {
 
             int status = c.getResponseCode();
             JsonObject jo = (JsonObject) Json.parse(new InputStreamReader(c.getInputStream()));
-            //System.out.println(c.getURL() + " -> [" + status + "]");
+            System.out.println(c.getURL() + " -> [" + status + "]");
             //System.out.println(jo.toString());
             return jo;
         } catch (Exception e) {

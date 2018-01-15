@@ -25,11 +25,11 @@
             <version>0.9.5</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/jfree/jfreechart -->
+        <!-- https://mvnrepository.com/artifact/org.jfree/jfreechart -->
         <dependency>
-            <groupId>jfree</groupId>
+            <groupId>org.jfree</groupId>
             <artifactId>jfreechart</artifactId>
-            <version>1.0.13</version>
+            <version>1.5.0</version>
         </dependency>
     </dependencies>
 </project>

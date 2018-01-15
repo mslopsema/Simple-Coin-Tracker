@@ -8,8 +8,9 @@ import ui.Elements;
 public class CoinTracker {
 
     public static final String TITLE = "Simple Coin Tracker";
+    private HttpThread httpThread = new HttpThread();
+    private HistThread histThread = new HistThread();
     private ApiBase api;
-    private Thread httpThread;
     private Elements e;
 
     public static void main(String[] args) {
@@ -30,22 +31,16 @@ public class CoinTracker {
                 e.frames.mainFrame.setVisible(true);
             }
         });
-        restartHttpThread();
-    }
-
-    private void restartHttpThread() {
-        if (httpThread != null) {
-            httpThread.interrupt();
-            httpThread = null;
-        }
-        httpThread = new Thread(new HttpThread());
+        api.loadSymbols();
         httpThread.start();
+        histThread.start();
     }
 
-    private class HttpThread implements Runnable {
+    private class HttpThread extends Thread {
 
+        @Override
         public void run() {
-            api.loadSymbols();
+            System.out.println("Start HttpThread");
             long startTimeThread = System.currentTimeMillis();
             long cycles = 0;
             int faults = 0;
@@ -58,6 +53,24 @@ public class CoinTracker {
                             " LoopTime : " + (System.currentTimeMillis() - startTimeLoop) +
                             " RunTime : "  + (System.currentTimeMillis() - startTimeThread));
                     Thread.sleep(e.refreshRate * 1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private class HistThread extends Thread {
+
+        @Override
+        public void run() {
+            System.out.println("Start HistoryThread");
+            while (!Thread.interrupted()) {
+                try {
+                    api.getHistory(e);
+                    System.out.println("History Updated");
+                    // 10x Slower than Table Update
+                    Thread.sleep(e.refreshRate * 1000 * 10);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

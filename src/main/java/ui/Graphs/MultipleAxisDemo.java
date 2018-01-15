@@ -1,10 +1,10 @@
-package ui;
+package ui.Graphs;
 
 import javax.swing.JPanel;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
-import org.jfree.chart.ChartUtilities;
+import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisLocation;
 import org.jfree.chart.axis.NumberAxis;
@@ -16,13 +16,14 @@ import org.jfree.data.time.RegularTimePeriod;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYDataset;
-import org.jfree.ui.ApplicationFrame;
+
+import java.awt.*;
 
 
 /**
  * An example of a time series chart with multiple axes.
  */
-public class MultipleAxisDemo extends ApplicationFrame {
+public class MultipleAxisDemo extends JPanel {
 
     /**
      * A demonstration application showing how to create a time series chart
@@ -31,11 +32,12 @@ public class MultipleAxisDemo extends ApplicationFrame {
      * @param title  the frame title.
      */
     public MultipleAxisDemo(String title) {
-        super(title);
+        super();
+        setLayout(new BorderLayout());
         System.out.println("Start MultipleAxisDemo");
         JPanel chartPanel = createDemoPanel();
-        chartPanel.setPreferredSize(new java.awt.Dimension(600, 270));
-        setContentPane(chartPanel);
+        //chartPanel.setPreferredSize(new java.awt.Dimension(600, 270));
+        super.add(chartPanel);
     }
 
     /**
@@ -44,8 +46,7 @@ public class MultipleAxisDemo extends ApplicationFrame {
      * @return The chart.
      */
     private static JFreeChart createChart() {
-        XYDataset dataset1 = createDataset("Series 1", 100.0, new Minute(),
-                200);
+        XYDataset dataset1 = createDataset("Series 1", 100.0, new Minute(), 200);
 
         JFreeChart chart = ChartFactory.createTimeSeriesChart(
                 "Multiple Axis Demo 3",
@@ -76,14 +77,13 @@ public class MultipleAxisDemo extends ApplicationFrame {
         plot.setRangeAxis(1, yAxis2);
         plot.setRangeAxisLocation(1, AxisLocation.BOTTOM_OR_RIGHT);
 
-        XYDataset dataset2 = createDataset("Series 2", 1000.0, new Minute(),
-                170);
+        XYDataset dataset2 = createDataset("Series 2", 1000.0, new Minute(), 170);
         plot.setDataset(1, dataset2);
         plot.mapDatasetToDomainAxis(1, 1);
         plot.mapDatasetToRangeAxis(1, 1);
 
         plot.setRenderer(1, new XYLineAndShapeRenderer(true, false));
-        ChartUtilities.applyCurrentTheme(chart);
+        ChartUtils.applyCurrentTheme(chart);
 
         return chart;
 

@@ -16,6 +16,8 @@ import java.util.Iterator;
 import java.util.Set;
 
 import api.ApiBase;
+import ui.Graphs.MultipleAxisDemo;
+import ui.Graphs.PriceGraph;
 import ui.TableModel.CustomTableModel;
 import ui.TableModel.Portfolio;
 import ui.TableModel.Tracker;
@@ -333,6 +335,11 @@ public class Elements {
             gbc.gridwidth = 3;
             gbc.weighty = 1000;
             portfolio.add(portfolioTable, gbc);
+            gbc.gridx = 0;
+            gbc.gridy = 3;
+            gbc.gridwidth = 3;
+            gbc.weighty = 1000;
+            portfolio.add(graphs.portfolio, gbc);
 
             main.setLayout(new BoxLayout(main, BoxLayout.Y_AXIS));
             status.setLayout(new BoxLayout(status, BoxLayout.X_AXIS));
@@ -353,7 +360,7 @@ public class Elements {
     }
 
     public class Graphs {
-
+        public PriceGraph portfolio = new PriceGraph();
     }
 
     public Buttons buttons = new Buttons();
@@ -362,6 +369,7 @@ public class Elements {
     public ComboBoxes comboBoxes = new ComboBoxes();
     public Tables tables = new Tables();
     public Menus menus = new Menus();
+    public Graphs graphs = new Graphs();
     public Panels panels = new Panels();
     public Tabs tabs = new Tabs();
     public Frames frames = new Frames();
