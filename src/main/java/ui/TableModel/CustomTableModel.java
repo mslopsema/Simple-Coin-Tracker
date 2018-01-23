@@ -2,6 +2,7 @@ package ui.TableModel;
 
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
 
 import ui.Record;
 import utils.Files;
@@ -135,11 +136,24 @@ public abstract class CustomTableModel extends AbstractTableModel {
         for (Record r : mRecordList) {
             JsonObject jo = new JsonObject();
             jo.add(Files.KEY_SYMBOL, r.symbol);
-            jo.add(Files.KEY_COUNT, String.valueOf(r.count));
+            jo.add(Files.KEY_COUNT, r.count);
             ja.add(jo);
         }
         return ja;
     }
 
-
+    /**
+     * For loading JSON data into the Table Model
+     * @param ja
+     */
+    public void fromJsonArray(JsonArray ja) {
+        clear();
+        for (JsonValue jv : ja) {
+            JsonObject jo = jv.asObject();
+            Record r = new Record(jo.getString(Files.KEY_SYMBOL, null));
+            if (r.symbol == null) continue;
+            r.count = jo.getDouble(Files.KEY_COUNT, 0);
+            mRecordList.add(r);
+        }
+    }
 }

@@ -10,10 +10,9 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
-import java.util.*;
 
 import api.ApiBase;
-import ui.Graphs.MultipleAxisDemo;
+import com.eclipsesource.json.JsonObject;
 import ui.Graphs.PriceGraph;
 import ui.TableModel.CustomTableModel;
 import ui.TableModel.Portfolio;
@@ -169,13 +168,10 @@ public class Elements {
 
         ActionListener alSave = new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                HashMap<String, String> assetMap = new HashMap<String, String>();
-                Iterator<Record> it = tables.modelPortfolio.iterator();
-                while (it.hasNext()) {
-                    Record r = it.next();
-                    assetMap.put(r.symbol, String.valueOf(r.count));
-                }
-                Files.saveConfig(tables.modelTrackers.toJsonArray(), tables.modelPortfolio.toJsonArray());
+                JsonObject root = new JsonObject();
+                root.add(Files.KEY_ASSETS, tables.modelPortfolio.toJsonArray());
+                root.add(Files.KEY_TRACKERS, tables.modelTrackers.toJsonArray());
+                Files.saveConfig(root);
                 logStatus("Save Config");
             }
         };
@@ -214,19 +210,9 @@ public class Elements {
         }
 
         public void loadConfig() {
-            Set<String> t = new HashSet<String>();
-            HashMap<String, String> a = new HashMap<String, String>();
-            Files.loadConfig(t, a);
-
-            for (String s : t) {
-                if (tables.modelTrackers.contains(s)) continue;
-                tables.modelTrackers.addRow(new Record(s));
-            }
-
-            for (String s : a.keySet()) {
-                if (tables.modelPortfolio.contains(s)) continue;
-                tables.modelPortfolio.addRow(new Record(s, Double.valueOf(a.get(s))));
-            }
+            JsonObject jo = Files.loadConfig().asObject();
+            tables.modelPortfolio.fromJsonArray(jo.get(Files.KEY_ASSETS).asArray());
+            tables.modelTrackers.fromJsonArray(jo.get(Files.KEY_TRACKERS).asArray());
             logStatus("Open Config");
         }
     }
@@ -445,7 +431,6 @@ public class Elements {
         USD = Double.parseDouble(new BigDecimal(USD, mc).toPlainString());
 
         if (isNew) ASSET_SUM = new double[] {BTC, ETH, USD};
-        System.out.println("TOTAL : " + Arrays.toString(ASSET_SUM));
         textFields.assetValueTracker.setText(String.valueOf(
                 ASSET_SUM[comboBoxes.assetValueTracker.getSelectedIndex()]));
         textFields.assetValuePortfolio.setText(String.valueOf(

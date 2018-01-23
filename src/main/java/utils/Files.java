@@ -1,7 +1,6 @@
 package utils;
 
 import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
@@ -9,8 +8,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.util.HashMap;
-import java.util.Set;
 
 public class Files {
     public static final String FILE_CONFIG = ".sct.config";
@@ -22,15 +19,10 @@ public class Files {
     /**
      * For saving configuration to backup file
      * Backup file will be '.coin.config'
-     * @param trackers
-     * @param assets
+     * @param root
      */
-    public static void saveConfig(JsonArray trackers, JsonArray assets) {
+    public static void saveConfig(JsonValue root) {
         try {
-            JsonObject root = new JsonObject();
-            root.add(KEY_TRACKERS, trackers);
-            root.add(KEY_ASSETS, assets);
-
             // Save JSON to Config File
             File f = new File(FILE_CONFIG);
             if (f.exists()) f.delete();
@@ -47,23 +39,14 @@ public class Files {
 
     /**
      * For retrieving data from backup config file
-     * @param trackers
-     * @param assets
      */
-    public static void loadConfig(Set<String> trackers, HashMap<String, String> assets) {
+    public static JsonValue loadConfig() {
+        JsonValue jv = new JsonObject();
         try {
-            JsonObject root = (JsonObject) Json.parse(new FileReader(FILE_CONFIG));
-            JsonArray ja_trackers = root.get(KEY_TRACKERS).asArray();
-            for (JsonValue jv : ja_trackers) trackers.add(jv.asString());
-            JsonArray ja_assets = root.get(KEY_ASSETS).asArray();
-            for (JsonValue jv : ja_assets) {
-                JsonObject jo = jv.asObject();
-                String symbol = jo.getString(KEY_SYMBOL, "");
-                String count = jo.getString(KEY_COUNT, "");
-                assets.put(symbol, count);
-            }
+            jv = Json.parse(new FileReader(FILE_CONFIG));
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return jv;
     }
 }
