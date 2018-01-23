@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 
 import api.ApiBase;
 import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
 import ui.Graphs.PriceGraph;
 import ui.TableModel.CustomTableModel;
 import ui.TableModel.Portfolio;
@@ -210,10 +211,15 @@ public class Elements {
         }
 
         public void loadConfig() {
-            JsonObject jo = Files.loadConfig().asObject();
-            tables.modelPortfolio.fromJsonArray(jo.get(Files.KEY_ASSETS).asArray());
-            tables.modelTrackers.fromJsonArray(jo.get(Files.KEY_TRACKERS).asArray());
-            logStatus("Open Config");
+            try {
+                JsonObject jo = Files.loadConfig().asObject();
+                tables.modelPortfolio.fromJsonArray(jo.get(Files.KEY_ASSETS).asArray());
+                tables.modelTrackers.fromJsonArray(jo.get(Files.KEY_TRACKERS).asArray());
+                logStatus("Open Config");
+            } catch (NullPointerException npe) {
+                npe.printStackTrace();
+                logStatus("Open Config FAILED");
+            }
         }
     }
 

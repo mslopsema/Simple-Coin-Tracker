@@ -1,5 +1,6 @@
 package ui.TableModel;
 
+import com.eclipsesource.json.JsonArray;
 import org.junit.Test;
 import ui.Record;
 
@@ -107,7 +108,29 @@ public class CustomTableModelTest {
     }
 
     @Test
-    public void toJsonArray() {
+    public void jsonParsing() {
+        int N = 50;
+        for (int i = 0; i < N; i++) {
+            Record r = new Record(String.valueOf(i));
+            r.count = i / 2.0d;
+            ctm.addRow(r);
+        }
 
+        JsonArray ja = ctm.toJsonArray();
+        ctm.clear();
+        assertEquals(0, ctm.getRowCount());
+
+        ctm.fromJsonArray(ja);
+        assertEquals(N, ctm.getRowCount());
+
+        for (int i = 0; i < N; i++) {
+            assertEquals(i / 2.0d, ctm.get(i).count, 0.01);
+        }
+
+        ctm.fromJsonArray(null);
+        assertEquals(N, ctm.getRowCount());
+
+        ctm.fromJsonArray(new JsonArray());
+        assertEquals(0, ctm.getRowCount());
     }
 }

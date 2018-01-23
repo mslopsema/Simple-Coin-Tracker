@@ -41,12 +41,14 @@ public class Files {
      * For retrieving data from backup config file
      */
     public static JsonValue loadConfig() {
-        JsonValue jv = new JsonObject();
+        File f = new File(FILE_CONFIG);
+        if (!f.exists()) return null;
+
         try {
-            jv = Json.parse(new FileReader(FILE_CONFIG));
+            return Json.parse(new FileReader(FILE_CONFIG));
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
-        return jv;
     }
 }

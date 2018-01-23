@@ -147,6 +147,7 @@ public abstract class CustomTableModel extends AbstractTableModel {
      * @param ja
      */
     public void fromJsonArray(JsonArray ja) {
+        if (ja == null) return;
         clear();
         for (JsonValue jv : ja) {
             JsonObject jo = jv.asObject();
