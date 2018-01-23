@@ -26,23 +26,13 @@ import java.util.Set;
  * Coin Tracking API Implementation using CryptoCompare APIs
  */
 public class CryptoCompare extends ApiBase {
-    /*
-    public static final String[] MARKETS = {"ANXBTC", "Abucoins", "BTC38", "BTCChina", "BTCE", "BTCMarkets",
-            "BTCXIndia", "BTER", "BXinth", "Binance", "Bit2C", "BitBay", "BitMarket", "BitSquare", "BitTrex",
-            "Bitfinex", "Bithumb", "Bitso", "Bitstamp", "Bleutrade", "CCCAGG", "CCEDK", "CCEX", "CHBTC", "Cexio",
-            "Coinbase", "Coincheck", "Coinfloor", "Coinone", "Coinroom", "Coinse", "Coinsetter", "CryptoX", "Cryptopia",
-            "Cryptsy", "EtherDelta", "EthexIndia", "Exmo", "Gatecoin", "Gateio", "Gemini", "HitBTC", "Huobi",
-            "HuobiPro", "Jubi", "Korbit", "Kraken", "LakeBTC", "Liqui", "LiveCoin", "LocalBitcoins", "Luno", "Lykke",
-            "MercadoBitcoin", "MonetaGo", "MtGox", "Novaexchange", "OKCoin", "OKEX", "Paymium", "Poloniex",
-            "QuadrigaCX", "Quoine", "Remitano", "TheRockTrading", "Tidex", "TuxExchange", "Unocoin", "Vaultoro",
-            "ViaBTC", "WavesDEX", "Yacuna", "Yobit", "Yunbi", "Zaif", "bitFlyer", "bitFlyerFX", "btcXchange", "itBit"};
-    public static final String[] MARKETS = {"Binance", "CCCAGG", "Coinbase", "Gemini"};
-    */
 
     private static final String API_COIN_LIST = "https://min-api.cryptocompare.com/data/all/coinlist";
     private static final String API_PRICE_PREFIX = "https://min-api.cryptocompare.com/data/pricemultifull";
     private static final String API_HISTORY_MIN_PREFIX = "https://min-api.cryptocompare.com/data/histominute?fsym=";
-    private static final String API_HISTORY_MIN_SUFFIX = "&tsym=USD&limit=1440&e=CCCAGG";
+    private static final String API_HISTORY_MIN_SUFFIX = "&tsym=USD&limit=2000&e=CCCAGG";
+    private static final String API_HISTORY_HOUR_PREFIX = "https://min-api.cryptocompare.com/data/histohour?fsym=";
+    private static final String API_HISTORY_DAY_PREFIX = "https://min-api.cryptocompare.com/data/histoday?fsym=";
     private static final String KEY_DATA = "Data";
     private static final int HISTORY = 100;
 
@@ -204,7 +194,7 @@ public class CryptoCompare extends ApiBase {
 
             int status = c.getResponseCode();
             JsonObject jo = (JsonObject) Json.parse(new InputStreamReader(c.getInputStream()));
-            //System.out.println(c.getURL() + " -> [" + status + "]");
+            System.out.println(c.getURL() + " -> [" + status + "]");
             //System.out.println(jo.toString());
             return jo;
         } catch (Exception e) {

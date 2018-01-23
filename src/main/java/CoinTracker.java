@@ -8,8 +8,6 @@ import ui.Elements;
 public class CoinTracker {
 
     public static final String TITLE = "Simple Coin Tracker";
-    private HttpThread httpThread = new HttpThread();
-    private HistThread histThread = new HistThread();
     private ApiBase api;
     private Elements e;
 
@@ -29,18 +27,27 @@ public class CoinTracker {
                 e = new Elements(api);
                 e.frames.mainFrame.setTitle(TITLE + " : " + api.HOME);
                 e.frames.mainFrame.setVisible(true);
+                new SymbolThread().start();
+                new HttpThread().start();
+                new HistThread().start();
             }
         });
-        api.loadSymbols();
-        httpThread.start();
-        histThread.start();
+    }
+
+    private class SymbolThread extends Thread {
+
+        @Override
+        public void run() {
+            System.out.println("Start SymbolThread " + Thread.currentThread().getId());
+            api.loadSymbols();
+        }
     }
 
     private class HttpThread extends Thread {
 
         @Override
         public void run() {
-            System.out.println("Start HttpThread");
+            System.out.println("Start HttpThread " + Thread.currentThread().getId());
             long startTimeThread = System.currentTimeMillis();
             long cycles = 0;
             int faults = 0;
@@ -64,7 +71,7 @@ public class CoinTracker {
 
         @Override
         public void run() {
-            System.out.println("Start HistoryThread");
+            System.out.println("Start HistoryThread " + Thread.currentThread().getId());
             while (!Thread.interrupted()) {
                 try {
                     api.getHistory(e);
