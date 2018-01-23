@@ -1,7 +1,6 @@
 package utils;
 
 import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
 import java.io.BufferedWriter;
@@ -31,7 +30,6 @@ public class Files {
             bw.write(root.toString());
             bw.flush();
             bw.close();
-            System.out.println("Save Success!");
         } catch (Exception e) {
             e.printStackTrace();
         }
