@@ -6,7 +6,7 @@
 
     <groupId>groupId</groupId>
     <artifactId>Simple-Coin-Tracker</artifactId>
-    <version>0.21-alpha</version>
+    <version>0.22-alpha</version>
 
     <dependencies>
         <!-- https://mvnrepository.com/artifact/junit/junit -->
