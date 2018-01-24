@@ -6,10 +6,7 @@ import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 
 import api.ApiBase;
-import org.jfree.chart.ChartUtils;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.time.*;
-import org.jfree.data.xy.XYDataset;
 import ui.Elements;
 import ui.Record;
 import utils.Formatting;
@@ -21,6 +18,11 @@ import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Coin Tracking API Implementation using CryptoCompare APIs
@@ -155,31 +157,64 @@ public class CryptoCompare extends ApiBase {
         return sb.toString();
     }
 
-    public boolean getHistory(Elements e) {
+    /**
+     * For retrieving the historical pricing of each coin in the portfolio.
+     * Will call each coin request in seperate thread, and load the results into the graph.
+     * @param elements
+     * @return
+     */
+    public boolean getHistory(Elements elements) {
 
-        TimeSeriesCollection tsc = new TimeSeriesCollection();
+        class Task implements Callable<JsonObject> {
+            private String url;
 
-        for (String key : e.tables.modelPortfolio.keySet()) {
-            String url = API_HISTORY_MIN_PREFIX + key + API_HISTORY_MIN_SUFFIX;
-            JsonObject jo = getHttp(url);
-
-            TimeSeries ts = new TimeSeries(key);
-            JsonArray data = jo.get("Data").asArray();
-            double first = -1;
-
-            for (JsonValue jv : data) {
-                JsonObject obj = jv.asObject();
-                long time = obj.getLong("time", 1453116960);
-                double close = obj.getDouble("close", 1);
-                if (first < 0) first = close;
-                double percentage = close / first;
-
-                Date date = new Date(time * 1000);
-                ts.addOrUpdate(new Minute(date), percentage);
+            Task(String key) {
+                this.url = API_HISTORY_MIN_PREFIX + key + API_HISTORY_MIN_SUFFIX;
             }
-            tsc.addSeries(ts);
+
+            public JsonObject call() {
+                return getHttp(url);
+            }
         }
-        e.graphs.portfolio.setData(tsc);
+
+
+        Set<String> keys = elements.tables.modelPortfolio.keySet();
+        if (keys.size() < 1) return false;
+
+        // Build the threadpool with each coin
+        ExecutorService executor = Executors.newFixedThreadPool(keys.size());
+        CompletionService<JsonObject> completionService = new ExecutorCompletionService<JsonObject>(executor);
+        for (String key : keys) completionService.submit(new Task(key));
+
+        // Check each result and load into the time series collection
+        TimeSeriesCollection tsc = new TimeSeriesCollection();
+        for(String key : keys){
+            try {
+                JsonObject jo = completionService.take().get();
+
+                TimeSeries ts = new TimeSeries(key);
+                JsonArray data = jo.get("Data").asArray();
+                double first = -1;
+
+                for (JsonValue jv : data) {
+                    JsonObject obj = jv.asObject();
+                    long time = obj.getLong("time", 1453116960);
+                    double close = obj.getDouble("close", 1);
+                    if (first < 0) first = close;
+                    double percentage = close / first;
+
+                    Date date = new Date(time * 1000);
+                    ts.addOrUpdate(new Minute(date), percentage);
+                }
+                tsc.addSeries(ts);
+            } catch (Exception e) {
+                // Just continue to try next one
+                e.printStackTrace();
+            }
+        }
+        executor.shutdown();
+        //elements.graphs.portfolio.removeAll();
+        elements.graphs.portfolio.setData(tsc);
         return true;
     }
 
