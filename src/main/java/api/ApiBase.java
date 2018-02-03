@@ -1,7 +1,9 @@
 package api;
 
 import ui.Elements;
+import ui.Record;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 
 public abstract class ApiBase {
@@ -20,5 +22,5 @@ public abstract class ApiBase {
 
     public abstract boolean updatePrice(Elements e);
 
-    public abstract boolean getHistory(Elements e);
+    public abstract boolean getHistory(ArrayList<Record> recordArrayList);
 }

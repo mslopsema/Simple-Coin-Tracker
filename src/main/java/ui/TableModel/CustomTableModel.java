@@ -60,6 +60,10 @@ public abstract class CustomTableModel extends AbstractTableModel {
         return null;
     }
 
+    public ArrayList<Record> getList() {
+        return mRecordList;
+    }
+
     /**
      * Accessor for the underlying List.
      * Will return a HashSet<String> of the SYMBOLS stored in this table.

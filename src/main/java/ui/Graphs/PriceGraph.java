@@ -6,23 +6,28 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.time.TimeSeriesCollection;
-import org.jfree.data.xy.XYDataset;
+import ui.Record;
 
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 
 public class PriceGraph extends JPanel {
 
     public PriceGraph() {
         super();
         setLayout(new BorderLayout());
-        setData(new TimeSeriesCollection());
+        setData(new ArrayList<Record>());
     }
 
-    public void setData(XYDataset data) {
+    public void setData(ArrayList<Record> recordArrayList) {
+        TimeSeriesCollection tsc = new TimeSeriesCollection();
+        for (Record r : recordArrayList) tsc.addSeries(GraphModes.getInstance().build(r));
+        removeAll();
+
         JFreeChart mChart = ChartFactory.createTimeSeriesChart(null, null, null,
-                data, true, true, false);
+                tsc, true, true, false);
 
         XYPlot plot = mChart.getXYPlot();
         DateAxis axis = (DateAxis) plot.getDomainAxis();

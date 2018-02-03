@@ -15,7 +15,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.DecimalFormat;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -160,10 +160,10 @@ public class CryptoCompare extends ApiBase {
     /**
      * For retrieving the historical pricing of each coin in the portfolio.
      * Will call each coin request in seperate thread, and load the results into the graph.
-     * @param elements
+     * @param recordList
      * @return
      */
-    public boolean getHistory(Elements elements) {
+    public boolean getHistory(ArrayList<Record> recordList) {
 
         class Task implements Callable<JsonObject> {
             private String url;
@@ -178,43 +178,33 @@ public class CryptoCompare extends ApiBase {
         }
 
 
-        Set<String> keys = elements.tables.modelPortfolio.keySet();
-        if (keys.size() < 1) return false;
+        if (recordList.size() < 1) return false;
 
         // Build the threadpool with each coin
-        ExecutorService executor = Executors.newFixedThreadPool(keys.size());
+        ExecutorService executor = Executors.newFixedThreadPool(recordList.size());
         CompletionService<JsonObject> completionService = new ExecutorCompletionService<JsonObject>(executor);
-        for (String key : keys) completionService.submit(new Task(key));
+        for (Record r : recordList) completionService.submit(new Task(r.symbol));
 
         // Check each result and load into the time series collection
         TimeSeriesCollection tsc = new TimeSeriesCollection();
-        for(String key : keys){
+        for(Record r : recordList) {
             try {
+                r.histories.clear();
                 JsonObject jo = completionService.take().get();
-
-                TimeSeries ts = new TimeSeries(key);
                 JsonArray data = jo.get("Data").asArray();
-                double first = -1;
 
                 for (JsonValue jv : data) {
                     JsonObject obj = jv.asObject();
                     long time = obj.getLong("time", 1453116960);
                     double close = obj.getDouble("close", 1);
-                    if (first < 0) first = close;
-                    double percentage = close / first;
-
-                    Date date = new Date(time * 1000);
-                    ts.addOrUpdate(new Minute(date), percentage);
+                    r.histories.add(new Record.history(time, close));
                 }
-                tsc.addSeries(ts);
             } catch (Exception e) {
                 // Just continue to try next one
                 e.printStackTrace();
             }
         }
         executor.shutdown();
-        //elements.graphs.portfolio.removeAll();
-        elements.graphs.portfolio.setData(tsc);
         return true;
     }
 

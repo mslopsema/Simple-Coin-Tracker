@@ -3,7 +3,10 @@ import javax.swing.SwingUtilities;
 
 import api.ApiBase;
 import api.sources.CryptoCompare;
+import org.jfree.data.time.TimeSeriesCollection;
 import ui.Elements;
+import ui.Graphs.GraphModes;
+import ui.Record;
 
 public class CoinTracker {
 
@@ -22,12 +25,12 @@ public class CoinTracker {
      */
     private CoinTracker() {
         api = new CryptoCompare();
+        new SymbolThread().start();
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 e = new Elements(api);
                 e.frames.mainFrame.setTitle(TITLE + " : " + api.HOME);
                 e.frames.mainFrame.setVisible(true);
-                new SymbolThread().start();
                 new HttpThread().start();
                 new HistThread().start();
             }
@@ -74,7 +77,9 @@ public class CoinTracker {
             System.out.println("Start HistoryThread " + Thread.currentThread().getId());
             while (!Thread.interrupted()) {
                 try {
-                    api.getHistory(e);
+                    api.getHistory(e.tables.modelPortfolio.getList());
+                    e.graphs.portfolio.setData(e.tables.modelPortfolio.getList());
+
                     System.out.println("History Updated");
                     // 10x Slower than Table Update
                     Thread.sleep(e.refreshRate * 1000 * 10);

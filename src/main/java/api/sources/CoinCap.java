@@ -3,6 +3,7 @@ package api.sources;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Set;
 
 import api.ApiBase;
@@ -11,6 +12,7 @@ import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
 import ui.Elements;
+import ui.Record;
 
 public class CoinCap extends ApiBase {
 
@@ -48,7 +50,7 @@ public class CoinCap extends ApiBase {
     }
 
     @Override
-    public boolean getHistory(Elements e) {
+    public boolean getHistory(ArrayList<Record> recordList) {
         return true;
     }
     

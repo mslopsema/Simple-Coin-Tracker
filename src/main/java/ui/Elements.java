@@ -14,6 +14,7 @@ import java.text.SimpleDateFormat;
 import api.ApiBase;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
+import ui.Graphs.GraphModes;
 import ui.Graphs.PriceGraph;
 import ui.TableModel.CustomTableModel;
 import ui.TableModel.Portfolio;
@@ -159,6 +160,11 @@ public class Elements {
         JMenuItem saveItem = new JMenuItem("Save");
         JMenuItem clearItem = new JMenuItem("Clear");
 
+        JMenu graphMenu = new JMenu("Graph");
+        JMenuItem modeRawItem = new JMenuItem("Raw Value");
+        JMenuItem modeSumItem = new JMenuItem("Sum Value");
+        JMenuItem modeDeltaItem = new JMenuItem("Delta Value");
+
         ActionListener alOpen = new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 tables.modelTrackers.clear();
@@ -186,6 +192,24 @@ public class Elements {
             }
         };
 
+        ActionListener alGraphModeRaw = new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                setGraphMode(GraphModes.MODE_RAW_VALUE);
+            }
+        };
+
+        ActionListener alGraphModeSum = new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                setGraphMode(GraphModes.MODE_TOTAL_VALUE);
+            }
+        };
+
+        ActionListener alGraphModeDelta = new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                setGraphMode(GraphModes.MODE_DAILY_CHANGE);
+            }
+        };
+
         KeyStroke keySave = KeyStroke.getKeyStroke(KeyEvent.VK_S, Event.CTRL_MASK);
         KeyStroke keyOpen = KeyStroke.getKeyStroke(KeyEvent.VK_O, Event.CTRL_MASK);
 
@@ -206,6 +230,15 @@ public class Elements {
             fileMenu.add(clearItem);
             mainMenuBar.add(fileMenu);
 
+            modeRawItem.addActionListener(alGraphModeRaw);
+            modeSumItem.addActionListener(alGraphModeSum);
+            modeDeltaItem.addActionListener(alGraphModeDelta);
+
+            graphMenu.add(modeRawItem);
+            graphMenu.add(modeSumItem);
+            graphMenu.add(modeDeltaItem);
+            mainMenuBar.add(graphMenu);
+
             // By default, open the saved configuration when the program is loaded.
             loadConfig();
         }
@@ -220,6 +253,12 @@ public class Elements {
                 npe.printStackTrace();
                 logStatus("Open Config FAILED");
             }
+        }
+
+        private void setGraphMode(int mode) {
+            logStatus("Set Graph Mode : " + mode);
+            GraphModes.getInstance().setMode(mode);
+            graphs.portfolio.setData(tables.modelPortfolio.getList());
         }
     }
 
