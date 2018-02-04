@@ -165,15 +165,25 @@ public class CryptoCompare extends ApiBase {
      */
     public boolean getHistory(ArrayList<Record> recordList) {
 
-        class Task implements Callable<JsonObject> {
-            private String url;
+        class Task implements Callable<Boolean> {
+            private Record record;
 
-            Task(String key) {
-                this.url = API_HISTORY_MIN_PREFIX + key + API_HISTORY_MIN_SUFFIX;
+            Task(Record record) {
+                this.record = record;
             }
 
-            public JsonObject call() {
-                return getHttp(url);
+            public Boolean call() {
+                JsonObject jo = getHttp(API_HISTORY_MIN_PREFIX + record.symbol + API_HISTORY_MIN_SUFFIX);
+                record.histories.clear();
+                JsonArray data = jo.get("Data").asArray();
+
+                for (JsonValue jv : data) {
+                    JsonObject obj = jv.asObject();
+                    long time = obj.getLong("time", 1453116960);
+                    double close = obj.getDouble("close", 1);
+                    record.histories.add(new Record.history(time, close));
+                }
+                return true;
             }
         }
 
@@ -182,28 +192,8 @@ public class CryptoCompare extends ApiBase {
 
         // Build the threadpool with each coin
         ExecutorService executor = Executors.newFixedThreadPool(recordList.size());
-        CompletionService<JsonObject> completionService = new ExecutorCompletionService<JsonObject>(executor);
-        for (Record r : recordList) completionService.submit(new Task(r.symbol));
-
-        // Check each result and load into the time series collection
-        TimeSeriesCollection tsc = new TimeSeriesCollection();
-        for(Record r : recordList) {
-            try {
-                r.histories.clear();
-                JsonObject jo = completionService.take().get();
-                JsonArray data = jo.get("Data").asArray();
-
-                for (JsonValue jv : data) {
-                    JsonObject obj = jv.asObject();
-                    long time = obj.getLong("time", 1453116960);
-                    double close = obj.getDouble("close", 1);
-                    r.histories.add(new Record.history(time, close));
-                }
-            } catch (Exception e) {
-                // Just continue to try next one
-                e.printStackTrace();
-            }
-        }
+        CompletionService<Boolean> completionService = new ExecutorCompletionService<Boolean>(executor);
+        for (Record r : recordList) completionService.submit(new Task(r));
         executor.shutdown();
         return true;
     }

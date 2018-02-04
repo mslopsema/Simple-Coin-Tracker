@@ -31,7 +31,7 @@ public class PriceGraph extends JPanel {
 
         XYPlot plot = mChart.getXYPlot();
         DateAxis axis = (DateAxis) plot.getDomainAxis();
-        axis.setDateFormatOverride(new SimpleDateFormat("yy.MM.dd HH:mm"));
+        axis.setDateFormatOverride(new SimpleDateFormat("MM/dd HH:mm"));
         removeAll();
         add(new ChartPanel(mChart));
         updateUI();
